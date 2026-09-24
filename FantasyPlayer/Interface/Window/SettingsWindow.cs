@@ -124,9 +124,17 @@ namespace FantasyPlayer.Interface.Window
                     _configuration.SpotifySettings.SpotifyClientId = this.spotifyClientId;
                 }
 
+                var setupUrl = "https://github.com/sammiecrafted/FantasyPlayer2.0/blob/main/SETUP.md";
+                if (ImGui.Button("Copy Instructions Link"))
+                {
+                    ImGui.SetClipboardText(setupUrl);
+                }
+
+                ImGui.SameLine();
+
                 if (ImGui.Button("Open Instructions"))
                 {
-                    "https://github.com/Critical-Impact/FantasyPlayer/blob/main/SETUP.md".OpenBrowser();
+                    setupUrl.OpenBrowser();
                 }
             }
 
