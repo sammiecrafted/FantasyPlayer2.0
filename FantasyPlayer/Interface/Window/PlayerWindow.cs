@@ -263,6 +263,14 @@ namespace FantasyPlayer.Interface.Window
                     playerProvider.ClearAuthError();
                 }
             }
+
+            ImGui.Spacing();
+            ImGui.Separator();
+            if (InterfaceUtils.ButtonCentered("Reset Login"))
+            {
+                _manualCode = string.Empty;
+                playerProvider.ResetLogin();
+            }
         }
 
         private string pageAwareText(string input) => input.Length > 400 ? input.Substring(0, 400) + "..." : input;

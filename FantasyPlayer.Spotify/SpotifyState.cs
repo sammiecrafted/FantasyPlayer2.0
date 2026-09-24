@@ -453,6 +453,31 @@ namespace FantasyPlayer.Spotify
             }
         }
 
+        public void Reset()
+        {
+            _stateUpdateCts?.Cancel();
+            _stateUpdateCts?.Dispose();
+            _stateUpdateCts = null;
+            try
+            {
+                _server?.Stop();
+            }
+            catch (Exception)
+            {
+                // The server may not be running, ignore.
+            }
+
+            _spotifyClient = null;
+            _authenticator = null;
+            _user = null;
+            _lastFullTrack = null;
+            CurrentlyPlaying = null;
+            TokenResponse = null;
+            _loginRequest = null;
+            AuthUri = null;
+            IsPremiumUser = false;
+        }
+
         public void Dispose()
         {
             _stateUpdateCts?.Cancel();

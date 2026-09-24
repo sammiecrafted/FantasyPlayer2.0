@@ -23,6 +23,7 @@ namespace FantasyPlayer.Provider.Common
         public string? LastAuthError { get; }
         public void CompleteAuth(string code);
         public void ClearAuthError();
+        public void ResetLogin();
 
         public void SwapRepeatState();
         public void SetPauseOrPlay(bool play);

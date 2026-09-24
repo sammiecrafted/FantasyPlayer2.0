@@ -219,6 +219,23 @@ namespace FantasyPlayer.Provider
             _lastAuthError = null;
         }
 
+        public void ResetLogin()
+        {
+            _loginCts?.Cancel();
+            _loginCts?.Dispose();
+            _loginCts = null;
+            _startCts?.Cancel();
+            _startCts?.Dispose();
+            _startCts = null;
+            _lastAuthError = null;
+            _spotifyState?.Reset();
+            configuration.SpotifySettings.TokenResponse = null;
+            var playerStateStruct = PlayerState;
+            playerStateStruct.IsAuthenticating = false;
+            playerStateStruct.IsLoggedIn = false;
+            PlayerState = playerStateStruct;
+        }
+
         public void SwapRepeatState()
         {
             if (_spotifyState!.CurrentlyPlaying != null)
