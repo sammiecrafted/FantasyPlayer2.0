@@ -1,4 +1,7 @@
 ﻿using Dalamud.Bindings.ImGui;
+using System;
+using System.IO;
+using System.Linq;
 using System.Numerics;
 using AllaganLib.Shared.Extensions;
 using Dalamud.Interface;
@@ -81,6 +84,9 @@ namespace FantasyPlayer.Interface.Window
         }
 
         private string? spotifyClientId = null;
+        private bool _folderPickerOpen;
+        private string _folderPickerPath = "/";
+        private string _folderPickerError = string.Empty;
 
         private void MainWindow()
         {
@@ -184,6 +190,12 @@ namespace FantasyPlayer.Interface.Window
                 if (ImGui.InputText("Music folder", ref musicFolder, 512))
                 {
                     _configuration.LocalSettings.MusicFolder = musicFolder;
+                }
+
+                ImGui.SameLine();
+                if (ImGui.Button("Browse..."))
+                {
+                    OpenFolderPicker();
                 }
 
                 ImGui.TextWrapped("The music folder must be a path mpd can read (keep it inside mpd's music_directory).");
@@ -375,6 +387,149 @@ namespace FantasyPlayer.Interface.Window
             }
 
             ImGui.Separator();
+
+            DrawFolderPicker();
+
+            ImGui.Separator();
+        }
+
+        private void OpenFolderPicker()
+        {
+            var start = _configuration.LocalSettings.MusicFolder;
+            if (string.IsNullOrWhiteSpace(start))
+            {
+                start = Directory.Exists($"/home/{Environment.UserName}") ? $"/home/{Environment.UserName}" : "/";
+            }
+
+            while (!Directory.Exists(start) && start.Length > 1)
+            {
+                var parent = Path.GetDirectoryName(start);
+                if (string.IsNullOrEmpty(parent))
+                {
+                    break;
+                }
+
+                start = parent;
+            }
+
+            _folderPickerPath = Directory.Exists(start) || start == "/" ? start : "/";
+            _folderPickerError = string.Empty;
+            _folderPickerOpen = true;
+        }
+
+        private void DrawFolderPicker()
+        {
+            if (_folderPickerOpen)
+            {
+                ImGui.OpenPopup("Select Music Folder");
+            }
+
+            if (!ImGui.BeginPopupModal("Select Music Folder", ref _folderPickerOpen, ImGuiWindowFlags.NoResize))
+            {
+                return;
+            }
+
+            if (string.IsNullOrEmpty(_folderPickerPath))
+            {
+                _folderPickerPath = "/";
+            }
+
+            if (ImGui.InputText("Folder path", ref _folderPickerPath, 512))
+            {
+                _folderPickerError = string.Empty;
+            }
+
+            if (ImGui.Button("Up one level") && _folderPickerPath != "/")
+            {
+                var parent = Path.GetDirectoryName(_folderPickerPath);
+                if (!string.IsNullOrEmpty(parent))
+                {
+                    _folderPickerPath = parent;
+                    _folderPickerError = string.Empty;
+                }
+            }
+
+            ImGui.SameLine();
+            if (ImGui.Button("Home"))
+            {
+                var home = $"/home/{Environment.UserName}";
+                if (Directory.Exists(home))
+                {
+                    _folderPickerPath = home;
+                    _folderPickerError = string.Empty;
+                }
+            }
+
+            ImGui.SameLine();
+            if (ImGui.Button("Music"))
+            {
+                var music = $"/home/{Environment.UserName}/Music";
+                if (Directory.Exists(music))
+                {
+                    _folderPickerPath = music;
+                    _folderPickerError = string.Empty;
+                }
+            }
+
+            ImGui.Separator();
+            ImGui.Text(_folderPickerPath);
+
+            ImGui.BeginChild("##pfp-folder-list", new Vector2(ImGui.GetContentRegionAvail().X, 280), true);
+            try
+            {
+                var subdirs = Directory.Exists(_folderPickerPath)
+                    ? Directory.GetDirectories(_folderPickerPath).OrderBy(d => d).ToArray()
+                    : Array.Empty<string>();
+                foreach (var dir in subdirs)
+                {
+                    var name = Path.GetFileName(dir);
+                    if (string.IsNullOrEmpty(name))
+                    {
+                        name = dir;
+                    }
+
+                    var label = FontAwesomeIcon.Folder.ToIconString() + "  " + name;
+                    if (ImGui.Selectable(label, false))
+                    {
+                        _folderPickerPath = dir;
+                        _folderPickerError = string.Empty;
+                    }
+
+                    if (ImGui.IsItemHovered())
+                    {
+                        ImGui.SetTooltip(dir);
+                    }
+                }
+            }
+            catch (System.Exception e)
+            {
+                _folderPickerError = "Could not read this folder: " + e.Message;
+            }
+
+            ImGui.EndChild();
+
+            if (!string.IsNullOrEmpty(_folderPickerError))
+            {
+                ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudRed);
+                ImGui.TextWrapped(_folderPickerError);
+                ImGui.PopStyleColor();
+            }
+
+            ImGui.Spacing();
+            var canUse = Directory.Exists(_folderPickerPath);
+            if (canUse && ImGui.Button("Use This Folder"))
+            {
+                _configuration.LocalSettings.MusicFolder = Path.GetFullPath(_folderPickerPath);
+                _folderPickerOpen = false;
+            }
+
+            ImGui.SameLine();
+            if (ImGui.Button("Cancel"))
+            {
+                _folderPickerOpen = false;
+            }
+
+            ImGui.EndPopup();
         }
     }
 }
