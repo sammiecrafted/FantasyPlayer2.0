@@ -84,6 +84,7 @@ Use `/pfp` in-game to control playback:
 | `/pfp volume <0-100>` | — | Set volume |
 | `/pfp display` | — | Toggle player window |
 | `/pfp relogin` | `reauth` | Re-open login window |
+| `right click` | `n/a` | Right Click player for more options. |
 
 ## Building
 
