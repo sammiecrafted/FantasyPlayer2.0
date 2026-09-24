@@ -144,7 +144,7 @@ namespace FantasyPlayer.Spotify
                 if (user == null)
                 {
                     OnAuthError?.Invoke(
-                        $"Unable to connect to Spotify after 3 attempts ({lastError?.Message}). Check your connection, then click \"Login\" and paste a fresh callback code.");
+                        $"Unable to connect to Spotify after 3 attempts ({lastError?.GetType().Name}: {lastError?.Message}). Your token is still valid - click \"Retry Connection\" below, or re-login if it persists.");
                     return;
                 }
 
@@ -163,6 +163,17 @@ namespace FantasyPlayer.Spotify
             {
                 OnAuthError?.Invoke($"Unable to connect to Spotify: {e.Message}");
             }
+        }
+
+        public void RetryConnect()
+        {
+            if (TokenResponse == null)
+            {
+                OnAuthError?.Invoke("No stored token yet - complete a login first.");
+                return;
+            }
+
+            Task.Run(() => Start(_authToken));
         }
 
         private async Task StateUpdateTimer(object obj)

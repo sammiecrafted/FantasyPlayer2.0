@@ -219,6 +219,11 @@ namespace FantasyPlayer.Provider
             _lastAuthError = null;
         }
 
+        public void RetryConnect()
+        {
+            _spotifyState?.RetryConnect();
+        }
+
         public void ResetLogin()
         {
             _loginCts?.Cancel();

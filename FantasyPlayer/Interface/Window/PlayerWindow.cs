@@ -258,6 +258,11 @@ namespace FantasyPlayer.Interface.Window
                 ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudRed);
                 InterfaceUtils.TextCentered(pageAwareText(playerProvider.LastAuthError));
                 ImGui.PopStyleColor();
+                if (InterfaceUtils.ButtonCentered("Retry Connection"))
+                {
+                    playerProvider.ClearAuthError();
+                    playerProvider.RetryConnect();
+                }
                 if (InterfaceUtils.ButtonCentered("Dismiss"))
                 {
                     playerProvider.ClearAuthError();
