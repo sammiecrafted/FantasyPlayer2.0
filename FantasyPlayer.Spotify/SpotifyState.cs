@@ -46,6 +46,7 @@ namespace FantasyPlayer.Spotify
 
         private string _challenge;
         private string _verifier;
+        private DateTime _challengeCreatedAt;
         private LoginRequest _loginRequest;
         private CancellationTokenSource? _stateUpdateCts;
         private CancellationToken _authToken;
@@ -71,6 +72,7 @@ namespace FantasyPlayer.Spotify
         private void GenerateCode()
         {
             (_verifier, _challenge) = PKCEUtil.GenerateCodes();
+            _challengeCreatedAt = DateTime.UtcNow;
         }
 
         private void CreateLoginRequest()
@@ -354,8 +356,9 @@ namespace FantasyPlayer.Spotify
             }
             catch (Exception e)
             {
+                var ageSeconds = (int)(DateTime.UtcNow - _challengeCreatedAt).TotalSeconds;
                 OnAuthError?.Invoke(
-                    $"Spotify rejected the login: {e.Message}. Codes are single-use and expire in ~10 minutes, and each 'Login' starts a fresh one - only use the newest callback URL, without clicking Reset Login in between.");
+                    $"Spotify rejected the login: {e.Message}. This code's authorization challenge was created {ageSeconds}s ago. Codes are single-use and expire in ~10 minutes, and each 'Login' starts a fresh one - only use the newest callback URL, without clicking Reset Login in between.");
                 return false;
             }
         }
