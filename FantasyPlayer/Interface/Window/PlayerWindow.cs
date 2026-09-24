@@ -19,6 +19,7 @@ namespace FantasyPlayer.Interface.Window
 {
     using DalaMock.Host.Mediator;
     using DalaMock.Shared.Interfaces;
+    using Dalamud.Interface.Colors;
     using Dalamud.Interface.Windowing;
     using Dalamud.Plugin.Services;
     using FantasyPlayer.Mediator;
@@ -39,6 +40,7 @@ namespace FantasyPlayer.Interface.Window
         private int _progressMs;
         private string _lastId;
         private bool _lastBoundByDuty;
+        private string _manualCode = "";
 
         private readonly Vector2 _playerWindowSize = new Vector2(401 * ImGui.GetIO().FontGlobalScale,
             89 * ImGui.GetIO().FontGlobalScale);
@@ -222,8 +224,39 @@ namespace FantasyPlayer.Interface.Window
                 InterfaceUtils.TextCentered("Waiting for a response to login... Please check your browser.");
                 if (InterfaceUtils.ButtonCentered("Re-open Url"))
                     playerProvider.RetryAuth();
+                ImGui.Separator();
+                InterfaceUtils.TextCentered("If the browser tab can't connect back to the game after authorizing,");
+                InterfaceUtils.TextCentered("copy the \"code=...\" from the address bar and paste it below instead.");
+
+                var authUri = playerProvider.AuthUri;
+                if (!string.IsNullOrEmpty(authUri))
+                {
+                    if (InterfaceUtils.ButtonCentered("Copy Authorize URL"))
+                    {
+                        ImGui.SetClipboardText(authUri);
+                    }
+                }
+
+                ImGui.InputTextWithHint("##pfp-login-code", "Paste login code or callback URL", ref _manualCode, 4096);
+                if (InterfaceUtils.ButtonCentered("Complete Login") && !string.IsNullOrWhiteSpace(_manualCode))
+                {
+                    playerProvider.CompleteAuth(_manualCode);
+                }
+            }
+
+            if (!string.IsNullOrEmpty(playerProvider.LastAuthError))
+            {
+                ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudRed);
+                InterfaceUtils.TextCentered(pageAwareText(playerProvider.LastAuthError));
+                ImGui.PopStyleColor();
+                if (InterfaceUtils.ButtonCentered("Dismiss"))
+                {
+                    playerProvider.ClearAuthError();
+                }
             }
         }
+
+        private string pageAwareText(string input) => input.Length > 400 ? input.Substring(0, 400) + "..." : input;
 
         public override void Update()
         {

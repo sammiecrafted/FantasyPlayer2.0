@@ -48,6 +48,11 @@ namespace FantasyPlayer.Spotify
         private string _verifier;
         private LoginRequest _loginRequest;
         private CancellationTokenSource? _stateUpdateCts;
+        private CancellationToken _authToken;
+
+        public string? AuthUri { get; private set; }
+
+        public event Action<string>? OnAuthError;
 
         public SpotifyState(string loginUri, string clientId, int port, int playerRefreshTime)
         {
@@ -55,6 +60,12 @@ namespace FantasyPlayer.Spotify
             _clientId = clientId;
             _playerRefreshTime = playerRefreshTime;
             _server = new EmbedIOAuthServer(_loginUrl, port);
+            _server.AuthorizationCodeReceived += OnAuthorizationCodeReceived;
+            _server.ErrorReceived += (sender, message, context) =>
+            {
+                OnAuthError?.Invoke($"Callback error: {message}{(string.IsNullOrEmpty(context) ? string.Empty : $" ({context})")}");
+                return System.Threading.Tasks.Task.CompletedTask;
+            };
         }
 
         private void GenerateCode()
@@ -85,9 +96,10 @@ namespace FantasyPlayer.Spotify
 
                 TokenResponse = newResponse;
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                // Ignored
+                TokenResponse = null;
+                OnAuthError?.Invoke($"Token refresh failed, please login again. ({e.Message})");
             }
         }
 
@@ -124,7 +136,7 @@ namespace FantasyPlayer.Spotify
             }
             catch (Exception e)
             {
-                //We will just ignore for now, this should be handled better though
+                OnAuthError?.Invoke($"Unable to connect to Spotify: {e.Message}");
             }
         }
 
@@ -198,41 +210,125 @@ namespace FantasyPlayer.Spotify
                 return;
             }
             GenerateCode();
+            CreateLoginRequest();
+            AuthUri = _loginRequest.ToUri().ToString();
+            _authToken = token;
 
-            await _server.Start();
+            try
+            {
+                await _server.Start();
+            }
+            catch (Exception e)
+            {
+                OnAuthError?.Invoke($"Failed to start the local auth server: {e.Message}");
+                return;
+            }
             if (token.IsCancellationRequested)
             {
                 return;
             }
-            _server.AuthorizationCodeReceived += async (sender, response) =>
+
+            OpenBrowser(AuthUri);
+        }
+
+        private async Task OnAuthorizationCodeReceived(object sender, AuthorizationCodeResponse response)
+        {
+            try
             {
                 await _server.Stop();
                 TokenResponse = await new OAuthClient().RequestToken(
                     new PKCETokenRequest(_clientId!, response.Code, _server.BaseUri, _verifier)
                 );
-
-                Start(obj);
-            };
-            
-
-
-            CreateLoginRequest();
-            var uri = _loginRequest.ToUri();
-            _ = Process.Start(new ProcessStartInfo()
+                Start(_authToken);
+            }
+            catch (Exception e)
             {
-                FileName = uri.ToString(),
-                UseShellExecute = true,
-            });
+                OnAuthError?.Invoke($"Spotify rejected the login: {e.Message}");
+            }
+        }
+
+        private void OpenBrowser(string url)
+        {
+            try
+            {
+                _ = Process.Start(new ProcessStartInfo()
+                {
+                    FileName = url,
+                    UseShellExecute = true,
+                });
+            }
+            catch (Exception e)
+            {
+                OnAuthError?.Invoke(
+                    $"Couldn't open the browser automatically. Use the \"Copy Authorize URL\" button instead. ({e.Message})");
+            }
         }
 
         public void RetryLogin()
         {
-            var uri = _loginRequest.ToUri();
-            _ = Process.Start(new ProcessStartInfo()
+            if (_loginRequest == null || AuthUri == null)
             {
-                FileName = uri.ToString(),
-                UseShellExecute = true,
-            });
+                OnAuthError?.Invoke("Nothing to re-open yet, start a login first.");
+                return;
+            }
+            OpenBrowser(AuthUri);
+        }
+
+        public async Task<bool> CompleteAuthWithCode(string code)
+        {
+            code = (code ?? string.Empty).Trim();
+            if (string.IsNullOrEmpty(code))
+            {
+                OnAuthError?.Invoke("Please paste the code from the browser's address bar.");
+                return false;
+            }
+
+            if (code.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            {
+                code = ExtractCodeFromCallbackUrl(code);
+            }
+
+            if (string.IsNullOrEmpty(code))
+            {
+                OnAuthError?.Invoke("No \"code\" parameter was found in that URL.");
+                return false;
+            }
+
+            try
+            {
+                try
+                {
+                    await _server.Stop();
+                }
+                catch (Exception)
+                {
+                    // The server may not have been started, ignore.
+                }
+                TokenResponse = await new OAuthClient().RequestToken(
+                    new PKCETokenRequest(_clientId!, code, _server.BaseUri, _verifier)
+                );
+                Start(_authToken);
+                return true;
+            }
+            catch (Exception e)
+            {
+                OnAuthError?.Invoke($"Spotify rejected the login: {e.Message}");
+                return false;
+            }
+        }
+
+        private string ExtractCodeFromCallbackUrl(string url)
+        {
+            var query = url.Contains('?') ? url.Substring(url.IndexOf('?') + 1) : string.Empty;
+            foreach (var pair in query.Split('&'))
+            {
+                var parts = pair.Split('=');
+                if (parts.Length == 2 && parts[0] == "code")
+                {
+                    return Uri.UnescapeDataString(parts[1]);
+                }
+            }
+            return string.Empty;
         }
 
         public void PauseOrPlay(bool play)

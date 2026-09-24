@@ -27,9 +27,11 @@ namespace FantasyPlayer.Provider
             this.chatMessageService = chatMessageService;
             this.chatGui = chatGui;
         }
+
         public PlayerStateStruct PlayerState { get; set; }
 
         private SpotifyState? _spotifyState;
+        private string? _lastAuthError;
         private string _lastId;
 
         private CancellationTokenSource _startCts;
@@ -54,6 +56,7 @@ namespace FantasyPlayer.Provider
 
             _spotifyState.OnLoggedIn += OnLoggedIn;
             _spotifyState.OnPlayerStateUpdate += OnPlayerStateUpdate;
+            _spotifyState.OnAuthError += OnAuthError;
 
             if (configuration.SpotifySettings.TokenResponse == null)
             {
@@ -62,6 +65,10 @@ namespace FantasyPlayer.Provider
             }
             _spotifyState.TokenResponse = configuration.SpotifySettings.TokenResponse;
             await _spotifyState.RequestToken();
+            if (_spotifyState.TokenResponse == null)
+            {
+                return this;
+            }
             _startCts = new CancellationTokenSource();
             await Task.Run(() => _spotifyState.Start(_startCts.Token), _startCts.Token);
             initialized = true;
@@ -73,6 +80,16 @@ namespace FantasyPlayer.Provider
         public string Name => "Spotify";
 
         public bool Initialized => initialized;
+
+        public string? AuthUri => _spotifyState?.AuthUri;
+
+        public string? LastAuthError => _lastAuthError;
+
+        private void OnAuthError(string message)
+        {
+            _lastAuthError = message;
+            chatGui.PrintError(message);
+        }
 
         private void OnPlayerStateUpdate(CurrentlyPlayingContext currentlyPlaying, FullTrack playbackItem)
         {
@@ -157,14 +174,21 @@ namespace FantasyPlayer.Provider
             {
                 _spotifyState.OnLoggedIn -= OnLoggedIn;
                 _spotifyState.OnPlayerStateUpdate -= OnPlayerStateUpdate;
+                _spotifyState.OnAuthError -= OnAuthError;
                 _spotifyState.Dispose();
             }
         }
 
         public void StartAuth()
         {
+            _lastAuthError = null;
+            if (_spotifyState == null)
+            {
+                OnAuthError("No Spotify Client ID configured. Please add one in the settings.");
+                return;
+            }
             _loginCts = new CancellationTokenSource();
-            Task.Run(() => _spotifyState!.StartAuth(_loginCts.Token), _loginCts.Token);
+            Task.Run(() => _spotifyState.StartAuth(_loginCts.Token), _loginCts.Token);
             var playerStateStruct = PlayerState;
             playerStateStruct.IsAuthenticating = true;
             PlayerState = playerStateStruct;
@@ -172,7 +196,27 @@ namespace FantasyPlayer.Provider
 
         public void RetryAuth()
         {
-            _spotifyState!.RetryLogin();
+            if (_spotifyState == null)
+            {
+                OnAuthError("No Spotify Client ID configured. Please add one in the settings.");
+                return;
+            }
+            _spotifyState.RetryLogin();
+        }
+
+        public void CompleteAuth(string code)
+        {
+            if (_spotifyState == null)
+            {
+                OnAuthError("No Spotify Client ID configured. Please add one in the settings.");
+                return;
+            }
+            _ = Task.Run(() => _spotifyState.CompleteAuthWithCode(code));
+        }
+
+        public void ClearAuthError()
+        {
+            _lastAuthError = null;
         }
 
         public void SwapRepeatState()

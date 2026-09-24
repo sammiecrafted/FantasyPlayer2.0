@@ -1,0 +1,27 @@
+[
+  {
+    "Name": "Fantasy Player",
+    "InternalName": "FantasyPlayer",
+    "AssemblyVersion": "2.6.0.2",
+    "TestingAssemblyVersion": null,
+    "Description": "Control Spotify playback from within FFXIV, with OAuth login fixes (manual-code fallback). Originally by Critical-Impact / BiscuitUmU.",
+    "ApplicableVersion": "any",
+    "DalamudApiLevel": 15,
+    "IconUrl": null,
+    "ImageUrls": [],
+    "DownloadLinkInstall": "https://github.com/sammiecrafted/FantasyPlayer2.0/releases/latest/download/FantasyPlayer.zip",
+    "DownloadLinkUpdate": "https://github.com/sammiecrafted/FantasyPlayer2.0/releases/latest/download/FantasyPlayer.zip",
+    "DownloadLinkTesting": null,
+    "Tags": [],
+    "CategoryTags": null,
+    "IsHide": false,
+    "IsTestingExclusive": false,
+    "Changelog": null,
+    "AcceptsFeedback": true,
+    "FeedbackMessage": null,
+    "LastUpdate": 1769289600,
+    "TestingDalamudApiLevel": null,
+    "ReleaseUrl": null,
+    "RepoUrl": "https://github.com/sammiecrafted/FantasyPlayer2.0"
+  }
+]

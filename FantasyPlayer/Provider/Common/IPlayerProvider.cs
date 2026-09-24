@@ -19,6 +19,11 @@ namespace FantasyPlayer.Provider.Common
         public void RetryAuth();
         public void ReAuth();
 
+        public string? AuthUri { get; }
+        public string? LastAuthError { get; }
+        public void CompleteAuth(string code);
+        public void ClearAuthError();
+
         public void SwapRepeatState();
         public void SetPauseOrPlay(bool play);
         public void SetSkip(bool forward);
