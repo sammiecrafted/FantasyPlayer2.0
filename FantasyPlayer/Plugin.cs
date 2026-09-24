@@ -51,10 +51,10 @@ namespace FantasyPlayer
             containerBuilder.RegisterType<PlayerManager>().SingleInstance();
             containerBuilder.RegisterType<ChatMessageService>().SingleInstance();
             containerBuilder.RegisterType<InterfaceController>().SingleInstance();
-            containerBuilder.RegisterType<SettingsWindow>().As<Window>().SingleInstance();
-            containerBuilder.RegisterType<PlayerWindow>().As<Window>().SingleInstance();
-            containerBuilder.RegisterType<SpotifyLoginWindow>().As<Window>().SingleInstance();
-            containerBuilder.RegisterType<DebugWindow>().As<Window>().SingleInstance();
+            containerBuilder.RegisterType<SettingsWindow>().AsSelf().As<Window>().SingleInstance();
+            containerBuilder.RegisterType<PlayerWindow>().AsSelf().As<Window>().SingleInstance();
+            containerBuilder.RegisterType<SpotifyLoginWindow>().AsSelf().As<Window>().SingleInstance();
+            containerBuilder.RegisterType<DebugWindow>().AsSelf().As<Window>().SingleInstance();
             containerBuilder.RegisterType<CommandsService>().SingleInstance();
             containerBuilder.RegisterType<Font>().As<IFont>().SingleInstance();
             containerBuilder.RegisterType<IpcService>().SingleInstance();
