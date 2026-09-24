@@ -10,6 +10,7 @@ using FantasyPlayer.Interfaces;
 using FantasyPlayer.Manager;
 using FantasyPlayer.Provider;
 using FantasyPlayer.Provider.Common;
+using FantasyPlayer.Provider.Local;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility.Raii;
 using Microsoft.Extensions.Logging;
@@ -41,6 +42,7 @@ namespace FantasyPlayer.Interface.Window
         private string _lastId;
         private bool _lastBoundByDuty;
         private string _manualCode = "";
+        private int _localStationIndex;
 
         private readonly Vector2 _playerWindowSize = new Vector2(401 * ImGui.GetIO().FontGlobalScale,
             89 * ImGui.GetIO().FontGlobalScale);
@@ -128,7 +130,7 @@ namespace FantasyPlayer.Interface.Window
                 DrawWelcome();
             }
             else if (_playerManager.CurrentPlayerProvider != null &&
-                     !_playerManager.ProvidersLoading &&
+                     _playerManager.CurrentPlayerProvider.Initialized &&
                      _playerManager.CurrentPlayerProvider.PlayerState.RequiresLogin &&
                      configuration.PlayerSettings.PlayerWindowShown &&
                      !_playerManager.CurrentPlayerProvider.PlayerState.IsLoggedIn)
@@ -136,7 +138,7 @@ namespace FantasyPlayer.Interface.Window
                 DrawLogin();
             }
             else if (_playerManager.CurrentPlayerProvider != null &&
-                     !_playerManager.ProvidersLoading &&
+                     _playerManager.CurrentPlayerProvider.Initialized &&
                      _playerManager.CurrentPlayerProvider.PlayerState.IsLoggedIn &&
                      configuration.PlayerSettings.PlayerWindowShown)
             {
@@ -202,13 +204,8 @@ namespace FantasyPlayer.Interface.Window
 
         public void DrawLogin()
         {
-            if (_playerManager.ProvidersLoading)
-            {
-                return;
-            }
-
             var playerProvider = _playerManager.CurrentPlayerProvider;
-            if (playerProvider == null)
+            if (playerProvider == null || !playerProvider.Initialized)
             {
                 return;
             }
@@ -314,6 +311,51 @@ namespace FantasyPlayer.Interface.Window
             }
         }
 
+        private void DrawLocalControls(LocalProvider localProvider, PlayerStateStruct playerState)
+        {
+            if (!string.IsNullOrEmpty(localProvider.LastAuthError))
+            {
+                ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudRed);
+                InterfaceUtils.TextCentered(pageAwareText(localProvider.LastAuthError!));
+                ImGui.PopStyleColor();
+            }
+
+            var stations = configuration.LocalSettings.Stations;
+            if (stations.Count > 0)
+            {
+                var names = stations.Select(s => s.Name).ToArray();
+                if (_localStationIndex >= names.Length)
+                {
+                    _localStationIndex = 0;
+                }
+
+                if (ImGui.Combo("Station", ref _localStationIndex, names, names.Length))
+                {
+                }
+
+                ImGui.SameLine();
+                if (ImGui.Button("Play Station"))
+                {
+                    var station = stations[_localStationIndex];
+                    if (!string.IsNullOrEmpty(station.Url))
+                    {
+                        localProvider.PlayStation(station.Url);
+                    }
+                }
+            }
+
+            if (!string.IsNullOrEmpty(configuration.LocalSettings.MusicFolder))
+            {
+                ImGui.SameLine();
+                if (ImGui.Button("Play Folder"))
+                {
+                    localProvider.PlayFolder(configuration.LocalSettings.MusicFolder);
+                }
+            }
+
+            ImGui.Separator();
+        }
+
         private void DrawMain(PlayerStateStruct playerState, IPlayerProvider currentProvider)
         {
             BgAlpha = configuration.PlayerSettings.Transparency;
@@ -389,6 +431,11 @@ namespace FantasyPlayer.Interface.Window
             }
 
             //////////////// Window Basics ////////////////
+
+            if (currentProvider is LocalProvider localProvider)
+            {
+                DrawLocalControls(localProvider, playerState);
+            }
 
             if (playerState.CurrentlyPlaying.Id == null)
             {

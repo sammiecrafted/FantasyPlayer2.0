@@ -19,6 +19,7 @@ namespace FantasyPlayer
     using Microsoft.Extensions.DependencyInjection;
     using Provider;
     using Provider.Common;
+    using Provider.Local;
 
     public class Plugin : HostedPlugin
     {
@@ -45,6 +46,7 @@ namespace FantasyPlayer
                 return configuration;
             }).As<Configuration>().SingleInstance();
             containerBuilder.RegisterType<SpotifyProvider>().SingleInstance();
+            containerBuilder.RegisterType<LocalProvider>().SingleInstance();
             containerBuilder.RegisterType<CommandManagerFp>().SingleInstance();
             containerBuilder.RegisterType<PlayerManager>().SingleInstance();
             containerBuilder.RegisterType<ChatMessageService>().SingleInstance();
@@ -55,6 +57,7 @@ namespace FantasyPlayer
             containerBuilder.RegisterType<CommandsService>().SingleInstance();
             containerBuilder.RegisterType<Font>().As<IFont>().SingleInstance();
             containerBuilder.RegisterType<SpotifyProvider>().As<IPlayerProvider>().SingleInstance();
+            containerBuilder.RegisterType<LocalProvider>().As<IPlayerProvider>().SingleInstance();
             containerBuilder.RegisterType<IpcService>().SingleInstance();
         }
 

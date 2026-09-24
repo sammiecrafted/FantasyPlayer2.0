@@ -2,12 +2,12 @@
 
 ![Logo](./.repo_resources/logo.png)
 
-A Dalamud plugin to listen to music from within FFXI.
 Fork of [Critical-Impact/FantasyPlayer](https://github.com/Critical-Impact/FantasyPlayer) with:
 - Manual login fallback: paste the callback URL/code directly, or click **Paste & Complete Login** to read it from your clipboard.
 - Bigger paste box (full callback URLs fit).
 - Fixed button/input layout (no more overlapping widgets).
 - New icon.
+- Free music provider: play local files + internet radio via MPD, no Spotify or Premium required.
 
 ## Install in-game
 

@@ -14,7 +14,7 @@ namespace FantasyPlayer.Config
         private bool isDirty;
         public bool IsDirty
         {
-            get => isDirty || PlayerSettings.IsDirty || SpotifySettings.IsDirty || AutoPlaySettings.IsDirty;
+            get => isDirty || PlayerSettings.IsDirty || SpotifySettings.IsDirty || AutoPlaySettings.IsDirty || LocalSettings.IsDirty;
             set => SetField(ref isDirty, value, false);
         }
 
@@ -24,6 +24,7 @@ namespace FantasyPlayer.Config
             PlayerSettings.MarkClean();
             SpotifySettings.MarkClean();
             AutoPlaySettings.MarkClean();
+            LocalSettings.MarkClean();
         }
         private bool displayChatMessages;
         private bool configShown;
@@ -32,6 +33,7 @@ namespace FantasyPlayer.Config
         public PlayerSettings PlayerSettings { get; set; } = new PlayerSettings();
         public SpotifySettings SpotifySettings { get; set; } = new SpotifySettings();
         public AutoPlaySettings AutoPlaySettings { get; set; } = new AutoPlaySettings();
+        public LocalSettings LocalSettings { get; set; } = new LocalSettings();
 
         public bool DisplayChatMessages
         {

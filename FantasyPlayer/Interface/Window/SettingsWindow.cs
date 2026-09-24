@@ -138,6 +138,77 @@ namespace FantasyPlayer.Interface.Window
                 }
             }
 
+            if (ImGui.CollapsingHeader("Local Music (MPD) Settings"))
+            {
+                ImGui.TextWrapped("For free music without Spotify: this plays your own music files and free internet radio through a local MPD (Music Player Daemon). Select the 'Local' provider on the welcome screen. See SETUP.md for how to install mpd.");
+                ImGui.Separator();
+
+                var host = _configuration.LocalSettings.Host;
+                if (ImGui.InputText("MPD host", ref host, 128))
+                {
+                    _configuration.LocalSettings.Host = host;
+                }
+
+                var port = _configuration.LocalSettings.Port;
+                if (ImGui.InputInt("MPD port", ref port))
+                {
+                    _configuration.LocalSettings.Port = port;
+                }
+
+                var password = _configuration.LocalSettings.Password;
+                if (ImGui.InputText("MPD password (optional)", ref password, 128, ImGuiInputTextFlags.Password))
+                {
+                    _configuration.LocalSettings.Password = password;
+                }
+
+                var musicFolder = _configuration.LocalSettings.MusicFolder;
+                if (ImGui.InputText("Music folder", ref musicFolder, 512))
+                {
+                    _configuration.LocalSettings.MusicFolder = musicFolder;
+                }
+
+                ImGui.TextWrapped("The music folder must be a path mpd can read (keep it inside mpd's music_directory).");
+
+                ImGui.Separator();
+
+                ImGui.Text("Radio stations:");
+                var toRemove = -1;
+                for (var i = 0; i < _configuration.LocalSettings.Stations.Count; i++)
+                {
+                    var station = _configuration.LocalSettings.Stations[i];
+                    var name = station.Name;
+                    var url = station.Url;
+                    ImGui.PushID($"station{i}");
+                    if (ImGui.InputTextWithHint($"##station-name{i}", "Name", ref name, 128))
+                    {
+                        _configuration.LocalSettings.EditStation(i, name, url);
+                    }
+
+                    if (ImGui.InputTextWithHint($"##station-url{i}", "http://...", ref url, 512))
+                    {
+                        _configuration.LocalSettings.EditStation(i, name, url);
+                    }
+
+                    ImGui.SameLine();
+                    if (ImGui.Button("Remove"))
+                    {
+                        toRemove = i;
+                    }
+
+                    ImGui.PopID();
+                }
+
+                if (toRemove >= 0)
+                {
+                    _configuration.LocalSettings.RemoveStationAt(toRemove);
+                }
+
+                if (ImGui.Button("Add station"))
+                {
+                    _configuration.LocalSettings.AddStation(new FantasyPlayer.Config.RadioStation());
+                }
+            }
+
             if (!_configuration.SpotifySettings.LimitedAccess)
             {
                 if (ImGui.CollapsingHeader("Auto-play Settings"))

@@ -48,7 +48,7 @@ namespace FantasyPlayer.Provider
 
             if (string.IsNullOrEmpty(configuration.SpotifySettings.SpotifyClientId))
             {
-                initialized = false;
+                initialized = true;
                 return this;
             }
 

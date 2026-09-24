@@ -53,3 +53,56 @@ If you ever regenerate your Client ID or create a new Spotify app, just update t
 ## Troubleshoting
 If you put in the wrong Spotify Client ID, put in the correct one, hit save and then reload the plugin.
 
+---
+
+# Free Music: Local Files & Radio (MPD)
+
+If you don't have Spotify Premium (or want a free player), select the **Local** provider on the welcome screen. It plays your own music files and free internet radio through a local **MPD** (Music Player Daemon) — no subscription, no Spotify account needed.
+
+## 1. Install MPD
+
+**Linux / Steam Deck / Lutris** (your game runs under Wine — mpd runs natively on the host OS, which is the reliable way to get sound out):
+
+```sh
+# Debian/Ubuntu
+sudo apt install mpd
+# Fedora
+sudo dnf install mpd
+# Arch
+sudo pacman -S mpd
+```
+
+**Windows:** download the Windows build from https://www.musicpd.org/download/windows/ and run it, or install via a package manager (e.g. `choco install mpd`).
+
+## 2. Configure MPD
+
+Create `~/.config/mpd/mpd.conf` (Linux) or `C:\Users\you\AppData\Roaming\mpd\mpd.conf` (Windows) with at least:
+
+```
+music_directory  "/home/you/Music"          # where your music lives (MPD must be able to read it)
+playlist_directory  "/home/you/Music/playlists"
+db_file     "/tmp/mpd.db"
+log_file    "/tmp/mpd.log"
+state_file  "/tmp/mpd.state"
+
+audio_output {
+    type  "pulse"
+    name  "Pulse Output"
+}
+# Windows example:
+# audio_output { type "wasapi" name "WASAPI" }
+```
+
+Start it (`systemctl --user start mpd` for a user service, or just run `mpd` in a terminal). Make sure it is listening on port **6600**.
+
+## 3. Wire it up in the plugin
+
+1. In game, open `/pfp config` → **Local Music (MPD) Settings**.
+2. Set the mpd host (`127.0.0.1`), port (default `6600`), and password if you set one.
+3. Set **Music folder** to a path mpd can read (usually inside `music_directory`).
+4. Add your favorite free radio stations (name + stream URL, e.g. from https://www.radio-browser.info). The URL should end in `.mp3`, `.ogg`, `.aac`, or `.pls` for best results.
+5. Close settings, then select **Local** as your provider on the welcome screen.
+6. On the player window, choose a **Station** → **Play Station**, or **Play Folder** to play your own files.
+
+The player controls (play/pause, skip, shuffle, repeat, volume) work exactly like Spotify. If you get "Could not connect to MPD", check mpd is running and the host/port match.
+
