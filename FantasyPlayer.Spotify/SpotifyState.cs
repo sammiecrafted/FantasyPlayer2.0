@@ -143,8 +143,11 @@ namespace FantasyPlayer.Spotify
 
                 if (user == null)
                 {
+                    var detail = lastError is APIException apiEx
+                        ? $"{apiEx.Response.StatusCode}: {Truncate(apiEx.Response.Body?.ToString(), 200)}"
+                        : lastError?.Message;
                     OnAuthError?.Invoke(
-                        $"Unable to connect to Spotify after 3 attempts ({lastError?.GetType().Name}: {lastError?.Message}). Your token is still valid - click \"Retry Connection\" below, or re-login if it persists.");
+                        $"Unable to connect to Spotify after 3 attempts ({lastError?.GetType().Name}: {detail}). Your token is still valid - click \"Retry Connection\" below, or re-login if it persists.");
                     return;
                 }
 
@@ -174,6 +177,13 @@ namespace FantasyPlayer.Spotify
             }
 
             Task.Run(() => Start(_authToken));
+        }
+
+        private static string Truncate(string? s, int max)
+        {
+            if (string.IsNullOrEmpty(s))
+                return "<no body>";
+            return s.Length > max ? s.Substring(0, max) + "..." : s;
         }
 
         private async Task StateUpdateTimer(object obj)
@@ -263,8 +273,6 @@ namespace FantasyPlayer.Spotify
             {
                 return;
             }
-
-            OpenBrowser(AuthUri);
         }
 
         private async Task OnAuthorizationCodeReceived(object sender, AuthorizationCodeResponse response)

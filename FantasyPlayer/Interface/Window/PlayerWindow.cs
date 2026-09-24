@@ -221,7 +221,8 @@ namespace FantasyPlayer.Interface.Window
             }
             else
             {
-                InterfaceUtils.TextCentered("Waiting for a response to login... Please check your browser.");
+                InterfaceUtils.TextCentered("Waiting for a response to login... Copy the URL below, open it,");
+                InterfaceUtils.TextCentered("and authorize with the account you want to use.");
                 if (InterfaceUtils.ButtonCentered("Re-open Url"))
                     playerProvider.RetryAuth();
 
