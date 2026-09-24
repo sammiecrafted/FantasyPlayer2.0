@@ -246,8 +246,9 @@ namespace FantasyPlayer.Interface.Window
                 }
 
                 ImGui.Separator();
-                InterfaceUtils.TextCentered("If the browser tab can't connect back to the game after you agree,");
-                InterfaceUtils.TextCentered("copy the http://127.0.0.1:2984/callback?code=... address and paste it:");
+                InterfaceUtils.TextCentered("After you click Agree, your browser can't connect back to the game's local");
+                InterfaceUtils.TextCentered("server (normal on Wine/Linux), but the address bar still has the login code. Copy the");
+                InterfaceUtils.TextCentered("full 127.0.0.1:2984/callback?code=... URL and click \"Paste & Complete Login\".");
                 ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
                 ImGui.InputTextWithHint("##pfp-login-code", "Paste login code or callback URL", ref _manualCode, 8192);
             }
