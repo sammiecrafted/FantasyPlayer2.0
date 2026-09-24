@@ -266,7 +266,8 @@ namespace FantasyPlayer.Spotify
             }
             catch (Exception e)
             {
-                OnAuthError?.Invoke($"Spotify rejected the login: {e.Message}");
+                OnAuthError?.Invoke(
+                    $"Spotify rejected the login: {e.Message}. Codes are single-use and expire in ~10 minutes, and each 'Login' starts a fresh one - only use the newest callback URL, without clicking Reset Login in between.");
             }
         }
 
@@ -353,7 +354,8 @@ namespace FantasyPlayer.Spotify
             }
             catch (Exception e)
             {
-                OnAuthError?.Invoke($"Spotify rejected the login: {e.Message}");
+                OnAuthError?.Invoke(
+                    $"Spotify rejected the login: {e.Message}. Codes are single-use and expire in ~10 minutes, and each 'Login' starts a fresh one - only use the newest callback URL, without clicking Reset Login in between.");
                 return false;
             }
         }
