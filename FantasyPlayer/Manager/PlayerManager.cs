@@ -66,7 +66,20 @@ namespace FantasyPlayer.Manager
         {
             foreach (var playerProvider in PlayerProviders)
                 playerProvider.Update();
+
+            if (!_spotifyFallbackApplied && CurrentPlayerProvider != null &&
+                CurrentPlayerProvider.Key == "spotify" && !CurrentPlayerProvider.PlayerState.IsLoggedIn)
+            {
+                var local = PlayerProviders.FirstOrDefault(p => p.Key == "local");
+                if (local != null)
+                {
+                    CurrentPlayerProvider = local;
+                    _spotifyFallbackApplied = true;
+                }
+            }
         }
+
+        private bool _spotifyFallbackApplied;
 
         public override async Task StartAsync(CancellationToken cancellationToken)
         {

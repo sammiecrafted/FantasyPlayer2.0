@@ -1,5 +1,6 @@
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Colors;
+using FantasyPlayer.Config;
 using FantasyPlayer.Provider;
 using Microsoft.Extensions.Logging;
 
@@ -12,12 +13,15 @@ namespace FantasyPlayer.Interface.Window
     public class SpotifyLoginWindow : UpdatingWindow
     {
         private readonly SpotifyProvider spotifyProvider;
+        private readonly Configuration configuration;
         private string _manualCode = "";
+        private bool _autoStarted;
 
-        public SpotifyLoginWindow(ILogger<SpotifyLoginWindow> logger, MediatorService mediatorService, SpotifyProvider spotifyProvider)
+        public SpotifyLoginWindow(ILogger<SpotifyLoginWindow> logger, MediatorService mediatorService, SpotifyProvider spotifyProvider, Configuration configuration)
             : base(logger, mediatorService, "Fantasy Player - Spotify Login")
         {
             this.spotifyProvider = spotifyProvider;
+            this.configuration = configuration;
             this.Size = new System.Numerics.Vector2(560, 420);
             this.SizeCondition = ImGuiCond.FirstUseEver;
             this.SizeConstraints = new WindowSizeConstraints
@@ -29,6 +33,7 @@ namespace FantasyPlayer.Interface.Window
         public void Open()
         {
             IsOpen = true;
+            _autoStarted = false;
         }
 
         public override bool DrawConditions()
@@ -36,11 +41,31 @@ namespace FantasyPlayer.Interface.Window
             return IsOpen;
         }
 
+        public override void OnClose()
+        {
+            _autoStarted = false;
+            base.OnClose();
+        }
+
         public override void Update()
         {
-            if (IsOpen && spotifyProvider.PlayerState.IsLoggedIn)
+            if (!IsOpen)
+            {
+                return;
+            }
+
+            if (spotifyProvider.PlayerState.IsLoggedIn)
             {
                 IsOpen = false;
+                return;
+            }
+
+            if (!_autoStarted && spotifyProvider.Initialized &&
+                !string.IsNullOrEmpty(configuration.SpotifySettings.SpotifyClientId) &&
+                !spotifyProvider.PlayerState.IsAuthenticating)
+            {
+                _autoStarted = true;
+                spotifyProvider.StartAuth();
             }
         }
 
@@ -53,6 +78,17 @@ namespace FantasyPlayer.Interface.Window
             }
 
             var playerProvider = spotifyProvider;
+
+            if (string.IsNullOrEmpty(configuration.SpotifySettings.SpotifyClientId))
+            {
+                InterfaceUtils.TextCentered("No Spotify Client ID configured yet.");
+                InterfaceUtils.TextCentered("Add one under /pfp config -> Spotify Settings (see SETUP.md).");
+                if (InterfaceUtils.ButtonCentered("Open Settings"))
+                {
+                    configuration.ConfigShown = true;
+                }
+                return;
+            }
 
             if (!playerProvider.PlayerState.IsAuthenticating)
             {
@@ -93,6 +129,11 @@ namespace FantasyPlayer.Interface.Window
                 InterfaceUtils.TextCentered("full 127.0.0.1:2984/callback?code=... URL and click \"Paste & Complete Login\".");
                 ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
                 ImGui.InputTextWithHint("##pfp-login-code", "Paste login code or callback URL", ref _manualCode, 8192);
+                ImGui.Spacing();
+                ImGui.PushStyleColor(ImGuiCol.Text, InterfaceUtils.DarkenColor);
+                InterfaceUtils.TextCentered("Tip: Spotify requires the account that OWNS the app (Client ID) to have an active");
+                InterfaceUtils.TextCentered("Premium subscription. If the owner account is Free, login will fail.");
+                ImGui.PopStyleColor();
             }
 
             if (!string.IsNullOrEmpty(playerProvider.LastAuthError))

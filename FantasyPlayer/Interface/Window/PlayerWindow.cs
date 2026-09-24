@@ -245,6 +245,18 @@ namespace FantasyPlayer.Interface.Window
             {
                 playerProvider.ResetLogin();
             }
+
+            ImGui.Separator();
+            InterfaceUtils.TextCentered("No account? Use the built-in free music instead (your files + radio).");
+            if (InterfaceUtils.ButtonCentered("Use Local instead (free music)"))
+            {
+                var local = _playerManager.PlayerProviders.FirstOrDefault(p => p.Key == "local");
+                if (local != null)
+                {
+                    _playerManager.CurrentPlayerProvider = local;
+                    configuration.PlayerSettings.DefaultProvider = local.Key;
+                }
+            }
         }
 
         private string pageAwareText(string input) => input.Length > 400 ? input.Substring(0, 400) + "..." : input;
