@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace FantasyPlayer.Ipc
 {
+    using Config;
     using Manager;
     using Microsoft.Extensions.Hosting;
     using System.Threading;
@@ -48,6 +49,7 @@ namespace FantasyPlayer.Ipc
         private readonly PlayerManager _playerManager;
         private readonly IFramework _framework;
         private readonly ILogger<IpcService> _logger;
+        private readonly Configuration _configuration;
 
         private ICallGateProvider<string>? _getTitle;
         private ICallGateProvider<string>? _getArtist;
@@ -72,12 +74,13 @@ namespace FantasyPlayer.Ipc
         private bool? _lastIsPlaying;
         private string? _lastTrackId;
 
-        public IpcService(IDalamudPluginInterface pluginInterface, PlayerManager playerManager, IFramework framework, ILogger<IpcService> logger)
+        public IpcService(IDalamudPluginInterface pluginInterface, PlayerManager playerManager, IFramework framework, ILogger<IpcService> logger, Configuration configuration)
         {
             this._pluginInterface = pluginInterface;
             this._playerManager = playerManager;
             this._framework = framework;
             this._logger = logger;
+            this._configuration = configuration;
         }
 
         private static (string?, string, string[], string, int) PackTrack(TrackStruct t) => (t.Id, t.Name, t.Artists, t.Album.Name, t.DurationMs);
@@ -168,7 +171,13 @@ namespace FantasyPlayer.Ipc
             _toggleRepeat.RegisterAction(() => _playerManager.CurrentPlayerProvider?.SwapRepeatState());
 
             _setVolume = _pluginInterface.GetIpcProvider<int, object?>("FantasyPlayer.SetVolume");
-            _setVolume.RegisterAction(vol => _playerManager.CurrentPlayerProvider?.SetVolume(Math.Clamp(vol, 0, 100)));
+            _setVolume.RegisterAction(vol =>
+            {
+                var maxVolume = _configuration.PlayerSettings.EnableVolumeLimit
+                    ? Math.Clamp(_configuration.PlayerSettings.VolumeLimit, 1, 100)
+                    : 100;
+                _playerManager.CurrentPlayerProvider?.SetVolume(Math.Clamp(vol, 0, maxVolume));
+            });
 
             _playbackStateChanged = _pluginInterface.GetIpcProvider<bool, bool>("FantasyPlayer.PlaybackStateChanged");
             _trackChanged = _pluginInterface.GetIpcProvider<(string?, string, string[], string, int), bool>("FantasyPlayer.TrackChanged");

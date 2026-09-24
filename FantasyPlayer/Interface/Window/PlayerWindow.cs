@@ -49,6 +49,9 @@ namespace FantasyPlayer.Interface.Window
         private List<Config.RadioStation> _radioResults = new List<Config.RadioStation>();
         private bool _radioBusy;
 
+        private float[] _visualizerLevels = new float[24];
+        private double _visualizerPhase;
+
         private readonly Vector2 _playerWindowSize = new Vector2(401 * ImGui.GetIO().FontGlobalScale,
             89 * ImGui.GetIO().FontGlobalScale);
 
@@ -604,6 +607,48 @@ namespace FantasyPlayer.Interface.Window
                     ImGui.PopFont();
                 }
 
+                if (!configuration.PlayerSettings.NoButtons)
+                {
+                    var maxVolume = configuration.PlayerSettings.EnableVolumeLimit
+                        ? Math.Clamp(configuration.PlayerSettings.VolumeLimit, 1, 100)
+                        : 100;
+
+                    if (playerState.Volume > maxVolume)
+                    {
+                        currentProvider.SetVolume(maxVolume);
+                    }
+
+                    var currentVolume = Math.Clamp(playerState.Volume, 0, maxVolume);
+                    if (ImGui.Button("-10"))
+                    {
+                        currentProvider.SetVolume(Math.Max(0, currentVolume - 10));
+                    }
+
+                    if (ImGui.IsItemHovered())
+                    {
+                        ImGui.SetTooltip("Decrease volume by 10%");
+                    }
+
+                    ImGui.SameLine();
+                    ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 95);
+                    if (ImGui.SliderInt("##pfp-volume", ref currentVolume, 0, maxVolume,
+                            maxVolume < 100 ? $"Volume: {currentVolume}% (limit {maxVolume}%)" : "Volume: %d%"))
+                    {
+                        currentProvider.SetVolume(currentVolume);
+                    }
+
+                    ImGui.SameLine();
+                    if (ImGui.Button("+10"))
+                    {
+                        currentProvider.SetVolume(Math.Min(maxVolume, currentVolume + 10));
+                    }
+
+                    if (ImGui.IsItemHovered())
+                    {
+                        ImGui.SetTooltip("Increase volume by 10%");
+                    }
+                }
+
                 if (!configuration.PlayerSettings.CompactPlayer)
                 {
                     if (configuration.PlayerSettings.ShowTimeElapsed)
@@ -617,6 +662,11 @@ namespace FantasyPlayer.Interface.Window
                     ImGui.PushStyleColor(ImGuiCol.PlotHistogram, configuration.PlayerSettings.AccentColor);
                     ImGui.ProgressBar(percent / 100f, new Vector2(-1, 2f));
                     ImGui.PopStyleColor();
+
+                    if (configuration.PlayerSettings.ShowVisualizer)
+                    {
+                        DrawVisualizer(playerState.IsPlaying);
+                    }
 
 
                     Vector2 imageSize = new Vector2(100 * ImGui.GetIO().FontGlobalScale,
@@ -647,6 +697,69 @@ namespace FantasyPlayer.Interface.Window
             }
 
             base.Dispose(disposing);
+        }
+
+        private void DrawVisualizer(bool isPlaying)
+        {
+            var width = ImGui.GetContentRegionAvail().X;
+            if (width <= 10)
+            {
+                return;
+            }
+
+            var delta = (float)ImGui.GetIO().DeltaTime;
+            _visualizerPhase += delta * (isPlaying ? 9.0 : 2.5);
+            var barCount = _visualizerLevels.Length;
+
+            var maxHeight = 34f * ImGui.GetIO().FontGlobalScale;
+            var start = ImGui.GetCursorScreenPos();
+            var yBottom = start.Y + maxHeight;
+
+            var color = configuration.PlayerSettings.AccentColor;
+            color.W = Math.Max(0.35f, color.W);
+
+            var drawList = ImGui.GetWindowDrawList();
+            var gap = 3f;
+            var barW = (width - gap * (barCount - 1)) / barCount;
+
+            for (var i = 0; i < barCount; i++)
+            {
+                float target;
+                if (isPlaying)
+                {
+                    var beat = (int)Math.Floor(_visualizerPhase);
+                    var noise = (Hash(beat * 31 + i * 197) % 100) / 100f;
+                    var baseShape = (float)(0.35 + 0.4 * Math.Sin(i * 0.7 + _visualizerPhase * 2.2));
+                    target = Math.Clamp(0.15f + baseShape * 0.6f + noise * 0.35f, 0.05f, 1f);
+                }
+                else
+                {
+                    var noise = (Hash((int)_visualizerPhase * 13 + i * 89) % 60) / 1000f;
+                    target = 0.06f + noise;
+                }
+
+                _visualizerLevels[i] += (target - _visualizerLevels[i]) * Math.Min(1f, 14f * delta);
+
+                var barHeight = Math.Max(2f, _visualizerLevels[i] * maxHeight);
+                var x = start.X + i * (barW + gap);
+                drawList.AddRectFilled(
+                    new Vector2(x, yBottom - barHeight),
+                    new Vector2(x + barW, yBottom),
+                    ImGui.GetColorU32(color), 2f);
+            }
+
+            ImGui.Dummy(new Vector2(width, maxHeight));
+            ImGui.Spacing();
+        }
+
+        private static int Hash(int seed)
+        {
+            seed = (seed ^ 61) ^ (seed >> 16);
+            seed = seed + (seed << 3);
+            seed = seed ^ (seed >> 4);
+            seed = seed * unchecked((int)0x27d4eb2d);
+            seed = seed ^ (seed >> 15);
+            return seed & int.MaxValue;
         }
     }
 }

@@ -167,6 +167,7 @@ namespace FantasyPlayer.Provider.Local
             state.IsPlaying = status.GetValueOrDefault("state") == "play";
             state.RepeatState = MapRepeat(status);
             state.ShuffleState = status.GetValueOrDefault("random") == "1";
+            state.Volume = ParseInt(status, "volume");
 
             if (song.Count == 0)
             {

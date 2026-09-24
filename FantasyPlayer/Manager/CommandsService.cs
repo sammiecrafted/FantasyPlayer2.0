@@ -80,8 +80,12 @@ public class CommandsService : IHostedService
         var playerProvider = playerManager.CurrentPlayerProvider;
         if (playerProvider != null)
         {
-            chatMessageService.DisplayMessage($"Set volume to: {intValue}");
-            playerProvider.SetVolume(intValue);
+            var maxVolume = configuration.PlayerSettings.EnableVolumeLimit
+                ? Math.Clamp(configuration.PlayerSettings.VolumeLimit, 1, 100)
+                : 100;
+            var effectiveVolume = Math.Clamp(intValue, 0, maxVolume);
+            chatMessageService.DisplayMessage($"Set volume to: {effectiveVolume}");
+            playerProvider.SetVolume(effectiveVolume);
         }
         else
         {

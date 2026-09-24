@@ -42,6 +42,27 @@ namespace FantasyPlayer.Config
             set => SetField(ref playerWindowShown, value);
         }
 
+        private bool showVisualizer;
+        public bool ShowVisualizer
+        {
+            get => showVisualizer;
+            set => SetField(ref showVisualizer, value);
+        }
+
+        private bool enableVolumeLimit;
+        public bool EnableVolumeLimit
+        {
+            get => enableVolumeLimit;
+            set => SetField(ref enableVolumeLimit, value);
+        }
+
+        private int volumeLimit = 100;
+        public int VolumeLimit
+        {
+            get => volumeLimit;
+            set => SetField(ref volumeLimit, value);
+        }
+
         private string defaultProvider;
         public string DefaultProvider
         {

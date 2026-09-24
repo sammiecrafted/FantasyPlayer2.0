@@ -103,6 +103,7 @@ namespace FantasyPlayer.Provider
             playerStateStruct.IsPlaying = currentlyPlaying.IsPlaying;
             playerStateStruct.RepeatState = currentlyPlaying.RepeatState;
             playerStateStruct.ShuffleState = currentlyPlaying.ShuffleState;
+            playerStateStruct.Volume = currentlyPlaying.Device?.VolumePercent ?? playerStateStruct.Volume;
 
             playerStateStruct.CurrentlyPlaying = new TrackStruct
             {

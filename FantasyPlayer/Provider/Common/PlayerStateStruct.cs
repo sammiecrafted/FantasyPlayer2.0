@@ -11,6 +11,7 @@
         public bool ShuffleState;
         public bool IsPlaying;
         public int ProgressMs;
+        public int Volume;
         public TrackStruct CurrentlyPlaying;
     }
 }

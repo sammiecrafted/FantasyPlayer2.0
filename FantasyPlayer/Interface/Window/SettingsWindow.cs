@@ -333,6 +333,34 @@ namespace FantasyPlayer.Interface.Window
                     _configuration.PlayerSettings.ShowTimeElapsed = timeElapsed;
                 }
 
+                var showVisualizer = _configuration.PlayerSettings.ShowVisualizer;
+                if (ImGui.Checkbox("Show animated visualizer (bars move to the music)",
+                        ref showVisualizer))
+                {
+                    _configuration.PlayerSettings.ShowVisualizer = showVisualizer;
+                }
+
+                ImGui.Separator();
+
+                var enableVolumeLimit = _configuration.PlayerSettings.EnableVolumeLimit;
+                if (ImGui.Checkbox("Enable volume hard limit",
+                        ref enableVolumeLimit))
+                {
+                    _configuration.PlayerSettings.EnableVolumeLimit = enableVolumeLimit;
+                }
+
+                if (enableVolumeLimit)
+                {
+                    var volumeLimit = _configuration.PlayerSettings.VolumeLimit;
+                    if (ImGui.SliderInt("Volume limit (%)", ref volumeLimit, 1, 100, "%d%%"))
+                    {
+                        _configuration.PlayerSettings.VolumeLimit = volumeLimit;
+                    }
+
+                    ImGui.TextWrapped(
+                        "Playback will never go above this volume, no matter what's requested.");
+                }
+
                 ImGui.Separator();
 
                 var transparency = _configuration.PlayerSettings.Transparency;
