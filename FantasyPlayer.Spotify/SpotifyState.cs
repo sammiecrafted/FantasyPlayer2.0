@@ -120,8 +120,31 @@ namespace FantasyPlayer.Spotify
 
                 _spotifyClient = new SpotifyClient(config);
 
-                var user = await _spotifyClient.UserProfile.Current();
-                //var playlists = await _spotifyClient.Playlists.GetUsers(user.Id);
+                PrivateUser user = null;
+                Exception? lastError = null;
+                for (var attempt = 1; attempt <= 3; attempt++)
+                {
+                    try
+                    {
+                        user = await _spotifyClient.UserProfile.Current();
+                        break;
+                    }
+                    catch (Exception e)
+                    {
+                        lastError = e;
+                        if (attempt < 3)
+                        {
+                            await Task.Delay(1000 + attempt * 500);
+                        }
+                    }
+                }
+
+                if (user == null)
+                {
+                    OnAuthError?.Invoke(
+                        $"Unable to connect to Spotify after 3 attempts ({lastError?.Message}). Check your connection, then click \"Login\" and paste a fresh callback code.");
+                    return;
+                }
 
 
                 _user = user;
