@@ -200,6 +200,9 @@ namespace FantasyPlayer.Provider.Local
                 state.IsLoggedIn = true;
             }
 
+            state.HasQueueSupport = true;
+            state.HasPlaylistSupport = true;
+
             PlayerState = state;
         }
 
@@ -405,6 +408,207 @@ namespace FantasyPlayer.Provider.Local
         public void SetVolume(int volume)
         {
             _ = Run($"setvol {Math.Clamp(volume, 0, 100)}", "Local");
+        }
+
+        public void Seek(int positionMs)
+        {
+            _ = Run($"seekcur {positionMs / 1000}", "Local");
+        }
+
+        public void AddToQueue(string trackId)
+        {
+            _ = Run($"add \"{trackId}\"", "Local");
+        }
+
+        public async Task<List<QueueItem>> GetQueue()
+        {
+            var items = new List<QueueItem>();
+            if (_client == null || !_client.IsConnected)
+                return items;
+
+            try
+            {
+                var sections = await _client.PlaylistInfoAsync();
+                foreach (var section in sections)
+                {
+                    var file = section.GetValueOrDefault("file") ?? "";
+                    var title = section.GetValueOrDefault("Title") ?? FallbackName(file);
+                    var artist = section.GetValueOrDefault("Artist") ?? "Unknown";
+                    var album = section.GetValueOrDefault("Album") ?? "";
+                    var duration = int.TryParse(section.GetValueOrDefault("Time"), out var d) ? d * 1000 : 0;
+
+                    items.Add(new QueueItem
+                    {
+                        Id = section.GetValueOrDefault("songid") ?? file,
+                        Name = title,
+                        Artists = new[] { artist },
+                        Album = new AlbumStruct { Name = album, ImageUrl = "" },
+                        DurationMs = duration,
+                        ImageUrl = ""
+                    });
+                }
+            }
+            catch
+            {
+            }
+
+            return items;
+        }
+
+        public void RemoveFromQueue(int index)
+        {
+            _ = Run($"delete {index}", "Local");
+        }
+
+        public async Task<List<PlaylistStruct>> GetPlaylists()
+        {
+            var playlists = new List<PlaylistStruct>();
+            if (_client == null || !_client.IsConnected)
+                return playlists;
+
+            try
+            {
+                var sections = await _client.ListPlaylistsAsync();
+                foreach (var section in sections)
+                {
+                    playlists.Add(new PlaylistStruct
+                    {
+                        Id = section.GetValueOrDefault("playlist") ?? "",
+                        Name = section.GetValueOrDefault("playlist") ?? "",
+                        Description = "",
+                        ImageUrl = "",
+                        TrackCount = 0,
+                        Owner = "Local"
+                    });
+                }
+            }
+            catch
+            {
+            }
+
+            return playlists;
+        }
+
+        public async Task<PlaylistTrackList> GetPlaylistTracks(string playlistId)
+        {
+            var result = new PlaylistTrackList();
+            if (_client == null || !_client.IsConnected)
+                return result;
+
+            result.Playlist = new PlaylistStruct
+            {
+                Id = playlistId,
+                Name = playlistId,
+                Description = "",
+                ImageUrl = "",
+                TrackCount = 0,
+                Owner = "Local"
+            };
+
+            try
+            {
+                var sections = await _client.ListPlaylistInfoAsync(playlistId);
+                foreach (var section in sections)
+                {
+                    var file = section.GetValueOrDefault("file") ?? "";
+                    var title = section.GetValueOrDefault("Title") ?? FallbackName(file);
+                    var artist = section.GetValueOrDefault("Artist") ?? "Unknown";
+                    var album = section.GetValueOrDefault("Album") ?? "";
+                    var duration = int.TryParse(section.GetValueOrDefault("Time"), out var d) ? d * 1000 : 0;
+
+                    result.Tracks.Add(new PlaylistItem
+                    {
+                        Id = file,
+                        Name = title,
+                        Artists = new[] { artist },
+                        Album = new AlbumStruct { Name = album, ImageUrl = "" },
+                        DurationMs = duration,
+                        ImageUrl = "",
+                        PlaylistId = playlistId
+                    });
+                }
+                result.Playlist.TrackCount = result.Tracks.Count;
+            }
+            catch
+            {
+            }
+
+            return result;
+        }
+
+        public Task<PlaylistTrackList> SearchPlaylists(string query)
+        {
+            return Task.FromResult(new PlaylistTrackList());
+        }
+
+        public void PlayPlaylist(string playlistId, int trackIndex = 0)
+        {
+            _ = Task.Run(async () =>
+            {
+                await Run("clear", "Local");
+                await Run($"load \"{playlistId}\"", "Local");
+                await Run($"play {trackIndex}", "Local");
+            });
+        }
+
+        public async Task<List<QueueItem>> SearchTracks(string query)
+        {
+            var items = new List<QueueItem>();
+            if (_client == null || !_client.IsConnected)
+                return items;
+
+            try
+            {
+                var sections = await _client.SearchAsync("title", query);
+                foreach (var section in sections.Take(20))
+                {
+                    var file = section.GetValueOrDefault("file") ?? "";
+                    var title = section.GetValueOrDefault("Title") ?? FallbackName(file);
+                    var artist = section.GetValueOrDefault("Artist") ?? "Unknown";
+                    var album = section.GetValueOrDefault("Album") ?? "";
+                    var duration = int.TryParse(section.GetValueOrDefault("Time"), out var d) ? d * 1000 : 0;
+
+                    items.Add(new QueueItem
+                    {
+                        Id = file,
+                        Name = title,
+                        Artists = new[] { artist },
+                        Album = new AlbumStruct { Name = album, ImageUrl = "" },
+                        DurationMs = duration,
+                        ImageUrl = ""
+                    });
+                }
+            }
+            catch
+            {
+            }
+
+            return items;
+        }
+
+        public Task<LyricsStruct> GetLyrics()
+        {
+            return Task.FromResult(new LyricsStruct
+            {
+                TrackId = PlayerState.CurrentlyPlaying.Id ?? "",
+                TrackName = PlayerState.CurrentlyPlaying.Name,
+                Artist = string.Join(", ", PlayerState.CurrentlyPlaying.Artists),
+                Lines = new List<LyricsLine>(),
+                IsSynced = false
+            });
+        }
+
+        private readonly Dictionary<string, int> _playerVolumes = new();
+
+        public void SetPlayerVolume(string playerName, int volume)
+        {
+            _playerVolumes[playerName] = Math.Clamp(volume, 0, 100);
+            SetVolume(volume);
+        }
+
+        public int GetPlayerVolume(string playerName)
+        {
+            return _playerVolumes.TryGetValue(playerName, out var vol) ? vol : PlayerState.Volume;
         }
 
         public void Dispose()

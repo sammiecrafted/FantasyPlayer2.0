@@ -234,6 +234,26 @@ namespace FantasyPlayer.Provider.Local
             return ParseEntries(await SendAsync("currentsong", cancellationToken));
         }
 
+        public async Task<IEnumerable<Dictionary<string, string>>> PlaylistInfoAsync(CancellationToken cancellationToken = default)
+        {
+            return ParseSections(await SendAsync("playlistinfo", cancellationToken));
+        }
+
+        public async Task<IEnumerable<Dictionary<string, string>>> ListPlaylistsAsync(CancellationToken cancellationToken = default)
+        {
+            return ParseSections(await SendAsync("listplaylists", cancellationToken));
+        }
+
+        public async Task<IEnumerable<Dictionary<string, string>>> ListPlaylistInfoAsync(string playlist, CancellationToken cancellationToken = default)
+        {
+            return ParseSections(await SendAsync($"listplaylistinfo \"{playlist.Replace("\"", "\\\"")}\"", cancellationToken));
+        }
+
+        public async Task<IEnumerable<Dictionary<string, string>>> SearchAsync(string type, string query, CancellationToken cancellationToken = default)
+        {
+            return ParseSections(await SendAsync($"search {type} \"{query.Replace("\"", "\\\"")}\"", cancellationToken));
+        }
+
         public async Task<bool> CommandAsync(string command, CancellationToken cancellationToken = default)
         {
             var lines = await SendAsync(command, cancellationToken);

@@ -163,6 +163,60 @@ namespace FantasyPlayer.Interface.Window
                 ImGui.TextDisabled("Opens the Spotify login window");
             }
 
+            if (ImGui.CollapsingHeader("Apple Music Settings"))
+            {
+                ImGui.TextWrapped("Apple Music integration uses the Apple Music API. You need an Apple Developer account to generate a MusicKit developer token.");
+
+                var developerToken = _configuration.AppleMusicSettings.DeveloperToken;
+                if (ImGui.InputTextWithHint("Developer Token", "Enter your Apple Music developer token (JWT)", ref developerToken, 2048, ImGuiInputTextFlags.Password))
+                {
+                    _configuration.AppleMusicSettings.DeveloperToken = developerToken;
+                }
+
+                var teamId = _configuration.AppleMusicSettings.TeamId;
+                if (ImGui.InputTextWithHint("Team ID", "Your Apple Developer Team ID", ref teamId, 32))
+                {
+                    _configuration.AppleMusicSettings.TeamId = teamId;
+                }
+
+                var keyId = _configuration.AppleMusicSettings.KeyId;
+                if (ImGui.InputTextWithHint("Key ID", "The ID of your MusicKit private key", ref keyId, 32))
+                {
+                    _configuration.AppleMusicSettings.KeyId = keyId;
+                }
+
+                var appleSetupUrl = "https://developer.apple.com/documentation/applemusickit";
+                if (ImGui.Button("Open Apple Music Docs"))
+                {
+                    appleSetupUrl.OpenBrowser();
+                }
+
+                ImGui.Separator();
+
+                ImGui.TextWrapped("User Token (optional, for library access and personal playlists):");
+
+                var userToken = _configuration.AppleMusicSettings.MusicUserToken;
+                if (ImGui.InputTextWithHint("Music User Token", "Enter your Music User Token from the Apple Music app", ref userToken, 2048, ImGuiInputTextFlags.Password))
+                {
+                    _configuration.AppleMusicSettings.MusicUserToken = userToken;
+                }
+
+                if (_configuration.AppleMusicSettings.IsLoggedIn)
+                {
+                    ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.0f, 0.8f, 0.0f, 1.0f));
+                    ImGui.Text("Logged in to Apple Music");
+                    ImGui.PopStyleColor();
+                    if (ImGui.Button("Disconnect"))
+                    {
+                        _configuration.AppleMusicSettings.ClearLogin();
+                    }
+                }
+                else
+                {
+                    ImGui.TextDisabled("Not logged in (catalog search still works)");
+                }
+            }
+
             if (ImGui.CollapsingHeader("Local Music (MPD) Settings"))
             {
                 ImGui.TextWrapped("For free music without Spotify: this plays your own music files and free internet radio through a local MPD (Music Player Daemon). Select the 'Local' provider on the welcome screen. See SETUP.md for how to install mpd.");

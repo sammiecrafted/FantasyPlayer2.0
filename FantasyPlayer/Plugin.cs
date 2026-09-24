@@ -20,6 +20,7 @@ namespace FantasyPlayer
     using Provider;
     using Provider.Common;
     using Provider.Local;
+    using Provider.AppleMusic;
 
     public class Plugin : HostedPlugin
     {
@@ -46,6 +47,7 @@ namespace FantasyPlayer
                 return configuration;
             }).As<Configuration>().SingleInstance();
             containerBuilder.RegisterType<SpotifyProvider>().As<SpotifyProvider>().As<IPlayerProvider>().SingleInstance();
+            containerBuilder.RegisterType<AppleMusicProvider>().As<AppleMusicProvider>().As<IPlayerProvider>().SingleInstance();
             containerBuilder.RegisterType<LocalProvider>().As<LocalProvider>().As<IPlayerProvider>().SingleInstance();
             containerBuilder.RegisterType<CommandManagerFp>().SingleInstance();
             containerBuilder.RegisterType<PlayerManager>().SingleInstance();
@@ -69,6 +71,7 @@ namespace FantasyPlayer
             serviceCollection.AddHostedService(p => p.GetRequiredService<CommandsService>());
             serviceCollection.AddHostedService(p => p.GetRequiredService<MediatorService>());
             serviceCollection.AddHostedService(p => p.GetRequiredService<IpcService>());
+            serviceCollection.AddHostedService(p => p.GetRequiredService<AppleMusicProvider>());
         }
     }
 }

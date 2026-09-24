@@ -14,7 +14,7 @@ namespace FantasyPlayer.Config
         private bool isDirty;
         public bool IsDirty
         {
-            get => isDirty || PlayerSettings.IsDirty || SpotifySettings.IsDirty || AutoPlaySettings.IsDirty || LocalSettings.IsDirty;
+            get => isDirty || PlayerSettings.IsDirty || SpotifySettings.IsDirty || AppleMusicSettings.IsDirty || AutoPlaySettings.IsDirty || LocalSettings.IsDirty;
             set => SetField(ref isDirty, value, false);
         }
 
@@ -23,6 +23,7 @@ namespace FantasyPlayer.Config
             IsDirty = false;
             PlayerSettings.MarkClean();
             SpotifySettings.MarkClean();
+            AppleMusicSettings.MarkClean();
             AutoPlaySettings.MarkClean();
             LocalSettings.MarkClean();
         }
@@ -32,6 +33,7 @@ namespace FantasyPlayer.Config
 
         public PlayerSettings PlayerSettings { get; set; } = new PlayerSettings();
         public SpotifySettings SpotifySettings { get; set; } = new SpotifySettings();
+        public AppleMusicSettings AppleMusicSettings { get; set; } = new AppleMusicSettings();
         public AutoPlaySettings AutoPlaySettings { get; set; } = new AutoPlaySettings();
         public LocalSettings LocalSettings { get; set; } = new LocalSettings();
 

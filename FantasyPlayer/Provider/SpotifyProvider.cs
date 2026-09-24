@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FantasyPlayer.Interface;
@@ -32,10 +34,10 @@ namespace FantasyPlayer.Provider
 
         private SpotifyState? _spotifyState;
         private string? _lastAuthError;
-        private string _lastId;
+        private string? _lastId;
 
-        private CancellationTokenSource _startCts;
-        private CancellationTokenSource _loginCts;
+        private CancellationTokenSource? _startCts;
+        private CancellationTokenSource? _loginCts;
         private bool initialized;
 
         public async Task<IPlayerProvider> Initialize()
@@ -113,9 +115,14 @@ namespace FantasyPlayer.Provider
                 DurationMs = playbackItem.DurationMs,
                 Album = new AlbumStruct
                 {
-                    Name = playbackItem.Album.Name
+                    Name = playbackItem.Album.Name,
+                    ImageUrl = playbackItem.Album.Images.FirstOrDefault()?.Url ?? ""
                 }
             };
+
+            playerStateStruct.HasQueueSupport = true;
+            playerStateStruct.HasPlaylistSupport = true;
+            playerStateStruct.HasLyricsSupport = true;
 
             PlayerState = playerStateStruct;
         }
@@ -270,6 +277,70 @@ namespace FantasyPlayer.Provider
         {
             if (_spotifyState!.CurrentlyPlaying != null)
                 _spotifyState.SetVolume(volume);
+        }
+
+        public void Seek(int positionMs)
+        {
+        }
+
+        public void AddToQueue(string trackId)
+        {
+        }
+
+        public async Task<List<QueueItem>> GetQueue()
+        {
+            return new List<QueueItem>();
+        }
+
+        public void RemoveFromQueue(int index)
+        {
+        }
+
+        public async Task<List<PlaylistStruct>> GetPlaylists()
+        {
+            return new List<PlaylistStruct>();
+        }
+
+        public async Task<PlaylistTrackList> GetPlaylistTracks(string playlistId)
+        {
+            return new PlaylistTrackList { Tracks = new List<PlaylistItem>() };
+        }
+
+        public async Task<PlaylistTrackList> SearchPlaylists(string query)
+        {
+            return new PlaylistTrackList();
+        }
+
+        public void PlayPlaylist(string playlistId, int trackIndex = 0)
+        {
+        }
+
+        public async Task<List<QueueItem>> SearchTracks(string query)
+        {
+            return new List<QueueItem>();
+        }
+
+        public async Task<LyricsStruct> GetLyrics()
+        {
+            var trackId = PlayerState.CurrentlyPlaying.Id;
+            return new LyricsStruct
+            {
+                TrackId = trackId ?? "",
+                TrackName = PlayerState.CurrentlyPlaying.Name,
+                Artist = string.Join(", ", PlayerState.CurrentlyPlaying.Artists),
+                Lines = new List<LyricsLine>(),
+                IsSynced = false
+            };
+        }
+
+        public void SetPlayerVolume(string playerName, int volume)
+        {
+            SetVolume(volume);
+        }
+
+        public int GetPlayerVolume(string playerName)
+        {
+            return PlayerState.Volume;
         }
 
         public Task StartAsync(CancellationToken cancellationToken)

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using FantasyPlayer.Interface;
 using FantasyPlayer.Interfaces;
 
@@ -31,5 +32,21 @@ namespace FantasyPlayer.Provider.Common
         public void SetSkip(bool forward);
         public void SetShuffle(bool value);
         public void SetVolume(int volume);
+
+        public void Seek(int positionMs);
+        public void AddToQueue(string trackId);
+        public Task<List<QueueItem>> GetQueue();
+        public void RemoveFromQueue(int index);
+
+        public Task<List<PlaylistStruct>> GetPlaylists();
+        public Task<PlaylistTrackList> GetPlaylistTracks(string playlistId);
+        public Task<PlaylistTrackList> SearchPlaylists(string query);
+        public void PlayPlaylist(string playlistId, int trackIndex = 0);
+        public Task<List<QueueItem>> SearchTracks(string query);
+
+        public Task<LyricsStruct> GetLyrics();
+
+        public void SetPlayerVolume(string playerName, int volume);
+        public int GetPlayerVolume(string playerName);
     }
 }

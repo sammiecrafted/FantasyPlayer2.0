@@ -513,5 +513,27 @@ namespace FantasyPlayer.Spotify
             _server?.Stop();
             _spotifyClient = null;
         }
+
+        public async Task Seek(int positionMs)
+        {
+        }
+
+        public async Task AddToQueue(string trackUri)
+        {
+            try
+            {
+                if (CurrentlyPlaying == null) return;
+                var request = new PlayerAddToQueueRequest(trackUri) { DeviceId = _deviceId };
+                await _spotifyClient.Player.AddToQueue(request);
+            }
+            catch (APIException)
+            {
+            }
+        }
+
+        public SpotifyClient GetClient()
+        {
+            return _spotifyClient;
+        }
     }
 }

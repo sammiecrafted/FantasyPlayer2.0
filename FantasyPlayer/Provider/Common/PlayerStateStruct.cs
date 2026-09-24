@@ -1,4 +1,6 @@
-﻿namespace FantasyPlayer.Provider.Common
+﻿using System.Collections.Generic;
+
+namespace FantasyPlayer.Provider.Common
 {
     public struct PlayerStateStruct
     {
@@ -13,5 +15,12 @@
         public int ProgressMs;
         public int Volume;
         public TrackStruct CurrentlyPlaying;
+
+        public List<QueueItem> Queue;
+        public QueueItem? NextUp;
+        public LyricsStruct Lyrics;
+        public bool HasQueueSupport;
+        public bool HasPlaylistSupport;
+        public bool HasLyricsSupport;
     }
 }
