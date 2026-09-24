@@ -18,10 +18,10 @@ Fork of [Critical-Impact/FantasyPlayer](https://github.com/Critical-Impact/Fanta
 3. Add this repository URL:
 
 ```
-https://cdn.jsdelivr.net/gh/sammiecrafted/FantasyPlayer2.0@main/repo.json
+https://raw.githubusercontent.com/sammiecrafted/FantasyPlayer2.0/main/repo.json
 ```
 
-(Alternative, subject to GitHub cache lag: `https://raw.githubusercontent.com/sammiecrafted/FantasyPlayer2.0/main/repo.json`)
+(Alternative mirrored CDN, note it can lag behind new releases: `https://cdn.jsdelivr.net/gh/sammiecrafted/FantasyPlayer2.0@main/repo.json`)
 
 4. In the **Available Plugins** tab, search **Fantasy Player Improved** and install it.
 
