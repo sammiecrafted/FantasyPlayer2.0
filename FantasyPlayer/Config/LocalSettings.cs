@@ -104,5 +104,10 @@ namespace FantasyPlayer.Config
     {
         public string Name { get; set; } = string.Empty;
         public string Url { get; set; } = string.Empty;
+        public string Country { get; set; } = string.Empty;
+        public string Codec { get; set; } = string.Empty;
+        public int Bitrate { get; set; }
+        public int Votes { get; set; }
+        public string Tags { get; set; } = string.Empty;
     }
 }

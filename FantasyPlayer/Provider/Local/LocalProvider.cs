@@ -24,6 +24,7 @@ namespace FantasyPlayer.Provider.Local
         private readonly IChatGui chatGui;
 
         private MpdClient? _client;
+        private RadioBrowserService? _radioBrowser;
         private bool initialized;
         private DateTime _lastPoll = DateTime.MinValue;
         private DateTime _lastConnectAttempt = DateTime.MinValue;
@@ -47,6 +48,8 @@ namespace FantasyPlayer.Provider.Local
         public string Key => "local";
 
         public string Name => "Local";
+
+        public RadioBrowserService RadioBrowser => _radioBrowser ??= new RadioBrowserService();
 
         public bool Initialized => initialized;
 

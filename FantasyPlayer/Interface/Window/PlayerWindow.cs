@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Numerics;
+using System.Threading.Tasks;
 using Dalamud.Game.ClientState;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Interface;
@@ -43,6 +45,9 @@ namespace FantasyPlayer.Interface.Window
         private bool _lastBoundByDuty;
         private string _manualCode = "";
         private int _localStationIndex;
+        private string _radioQuery = "";
+        private List<Config.RadioStation> _radioResults = new List<Config.RadioStation>();
+        private bool _radioBusy;
 
         private readonly Vector2 _playerWindowSize = new Vector2(401 * ImGui.GetIO().FontGlobalScale,
             89 * ImGui.GetIO().FontGlobalScale);
@@ -350,6 +355,66 @@ namespace FantasyPlayer.Interface.Window
                 if (ImGui.Button("Play Folder"))
                 {
                     localProvider.PlayFolder(configuration.LocalSettings.MusicFolder);
+                }
+            }
+
+            ImGui.Separator();
+
+            if (ImGui.CollapsingHeader("Radio Browser"))
+            {
+                ImGui.TextWrapped("Search hundreds of thousands of free stations via radio-browser.info.");
+                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 90);
+                ImGui.InputTextWithHint("##radio-search", "Search stations...", ref _radioQuery, 256);
+                ImGui.SameLine();
+                var topDisabled = _radioBusy;
+                if (ImGui.Button("Top") && !topDisabled)
+                {
+                    _radioBusy = true;
+                    _ = Task.Run(() => localProvider.RadioBrowser.TopStationAsync())
+                        .ContinueWith(async t =>
+                        {
+                            _radioResults = t.Status == TaskStatus.RanToCompletion ? t.Result : new List<Config.RadioStation>();
+                            _radioBusy = false;
+                        }, TaskScheduler.Default);
+                }
+
+                ImGui.SameLine();
+                if (ImGui.Button("Search") && !string.IsNullOrWhiteSpace(_radioQuery) && !topDisabled)
+                {
+                    var query = _radioQuery;
+                    _radioBusy = true;
+                    _ = Task.Run(() => localProvider.RadioBrowser.SearchAsync(query))
+                        .ContinueWith(t =>
+                        {
+                            _radioResults = t.Status == TaskStatus.RanToCompletion ? t.Result : new List<Config.RadioStation>();
+                            _radioBusy = false;
+                        }, TaskScheduler.Default);
+                }
+
+                if (_radioBusy)
+                {
+                    InterfaceUtils.TextCentered("Searching...");
+                }
+
+                if (_radioResults.Count > 0)
+                {
+                    ImGui.Separator();
+                    foreach (var result in _radioResults)
+                    {
+                        var codec = result.Bitrate > 0
+                            ? (string.IsNullOrEmpty(result.Codec) ? result.Bitrate + " kbps" : result.Codec + " " + result.Bitrate + " kbps")
+                            : result.Codec;
+                        var meta = string.Join(" · ", new[] { result.Country, codec, "♥ " + result.Votes }.Where(s => !string.IsNullOrWhiteSpace(s)));
+                        if (ImGui.Selectable($"{result.Name}\n{meta}"))
+                        {
+                            localProvider.PlayStation(result.Url);
+                        }
+
+                        if (ImGui.IsItemHovered())
+                        {
+                            ImGui.SetTooltip(result.Url);
+                        }
+                    }
                 }
             }
 
