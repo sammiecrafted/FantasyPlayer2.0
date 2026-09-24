@@ -143,6 +143,13 @@ namespace FantasyPlayer.Interface.Window
                 DrawLogin();
             }
             else if (_playerManager.CurrentPlayerProvider != null &&
+                     _playerManager.CurrentPlayerProvider is LocalProvider localProvider &&
+                     localProvider.Initialized &&
+                     configuration.PlayerSettings.PlayerWindowShown)
+            {
+                DrawMain(_playerManager.CurrentPlayerProvider.PlayerState, _playerManager.CurrentPlayerProvider);
+            }
+            else if (_playerManager.CurrentPlayerProvider != null &&
                      _playerManager.CurrentPlayerProvider.Initialized &&
                      _playerManager.CurrentPlayerProvider.PlayerState.IsLoggedIn &&
                      configuration.PlayerSettings.PlayerWindowShown)

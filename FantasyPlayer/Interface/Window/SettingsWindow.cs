@@ -92,6 +92,14 @@ namespace FantasyPlayer.Interface.Window
 
             if (ImGui.CollapsingHeader("Fantasy Player"))
             {
+                var showPlayer = _configuration.PlayerSettings.PlayerWindowShown;
+                if (ImGui.Button(showPlayer ? "Hide floating player" : "Show floating player"))
+                {
+                    _configuration.PlayerSettings.PlayerWindowShown = !showPlayer;
+                }
+                ImGui.SameLine();
+                ImGui.TextDisabled("(or /pfp display on/off)");
+
                 var displayChatMessages = _configuration.DisplayChatMessages;
                 if (ImGui.Checkbox("Display chat messages", ref displayChatMessages))
                 {
