@@ -1,17 +1,41 @@
-# Fantasy Player
-A Dalamud plugin to control Spotify from within FFX|V.
+# Fantasy Player Improved
 
-![Preview](./.repo_resources/player_preview.png)]
+![Logo](./.repo_resources/logo.png)
+
+A Dalamud plugin to control Spotify from within FFXIV, with a hardened Spotify OAuth login that survives environments where the browser can't connect back to the game (Wine/Linux, firewalls).
+
+Fork of [Critical-Impact/FantasyPlayer](https://github.com/Critical-Impact/FantasyPlayer) with:
+- Manual login fallback: paste the callback URL/code directly, or click **Paste & Complete Login** to read it from your clipboard.
+- Bigger paste box (full callback URLs fit).
+- Fixed button/input layout (no more overlapping widgets).
+- New icon.
+
+## Install in-game
+
+1. Open your Dalamud plugin window (`/xlplugins`).
+2. Click the gear icon → **Third-Party Repositories**.
+3. Add this repository URL:
+
+```
+https://raw.githubusercontent.com/sammiecrafted/FantasyPlayer2.0/main/repo.json
+```
+
+4. In the **Available Plugins** tab, search **Fantasy Player Improved** and install it.
+
+## Setup
+
+Spotify now requires you to bring your own app. Follow [SETUP.md](./SETUP.md) to create a Spotify Developer app and get your Client ID.
+
+## Building
+
+```sh
+dotnet build FantasyPlayer/FantasyPlayer.csproj -c Release
+```
+
+## Current version
+
+[View releases](https://github.com/sammiecrafted/FantasyPlayer2.0/releases)
 
 ## Library Used
+
 [SpotifyAPI-NET](https://github.com/JohnnyCrazy/SpotifyAPI-NET)
-
-## Check out my other plugins
-
-- [Allagan Tools](https://github.com/Critical-Impact/InventoryTools)
-- [Allagan Item Search](https://github.com/Critical-Impact/AllaganItemSearch)
-- [Allagan Market](https://github.com/Critical-Impact/AllaganMarket)
-- [Allagan Tetris](https://github.com/Critical-Impact/AllaganTetris)
-- [Tippy](https://github.com/Critical-Impact/Tippy)
-- [Automount BGM](https://github.com/Critical-Impact/AutoMountBgm)
-- [Fantasy Player](https://github.com/Critical-Impact/FantasyPlayer)
