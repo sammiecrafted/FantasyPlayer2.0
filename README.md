@@ -25,7 +25,7 @@ https://cdn.jsdelivr.net/gh/sammiecrafted/FantasyPlayer2.0@main/repo.json
 
 ## Setup
 
-Spotify now requires you to bring your own app. Follow [SETUP.md](./SETUP.md) to create a Spotify Developer app and get your Client ID.
+Spotify now requires you to bring your own app. Follow [SETUP.md](./SETUP.md) to create a Spotify Developer app and get your Client ID. (NOTE YOU MUST HAVE SPOTIFY PREMIUM IN ORDER TO CONNECT YOUR ACCOUNT TO LISTEN) 
 
 ## Building
 
