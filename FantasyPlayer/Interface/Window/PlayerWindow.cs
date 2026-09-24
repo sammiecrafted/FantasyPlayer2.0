@@ -239,12 +239,17 @@ namespace FantasyPlayer.Interface.Window
                 {
                     playerProvider.CompleteAuth(_manualCode);
                 }
+                if (InterfaceUtils.ButtonCentered("Paste & Complete Login"))
+                {
+                    _manualCode = ImGui.GetClipboardText() ?? string.Empty;
+                    playerProvider.CompleteAuth(_manualCode);
+                }
 
                 ImGui.Separator();
                 InterfaceUtils.TextCentered("If the browser tab can't connect back to the game after you agree,");
-                InterfaceUtils.TextCentered("copy the \"code=...\" from the address bar and paste it below:");
+                InterfaceUtils.TextCentered("copy the http://127.0.0.1:2984/callback?code=... address and paste it:");
                 ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-                ImGui.InputTextWithHint("##pfp-login-code", "Paste login code or callback URL", ref _manualCode, 512);
+                ImGui.InputTextWithHint("##pfp-login-code", "Paste login code or callback URL", ref _manualCode, 8192);
             }
 
             if (!string.IsNullOrEmpty(playerProvider.LastAuthError))

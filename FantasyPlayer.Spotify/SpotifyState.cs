@@ -285,6 +285,24 @@ namespace FantasyPlayer.Spotify
 
             if (code.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
+                if (!code.Contains('?') || !code.Contains("code=", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (code.StartsWith("https://accounts.spotify.com/authorize",
+                            StringComparison.OrdinalIgnoreCase))
+                    {
+                        OnAuthError?.Invoke(
+                            "That's the Spotify authorization page, not a login code. Opening it in your browser now - after you click Agree, paste the \"127.0.0.1:2984/callback?code=...\" address you land on into this box.");
+                        RetryLogin();
+                    }
+                    else
+                    {
+                        OnAuthError?.Invoke(
+                            "No \"code\" parameter was found in that URL. Paste the full callback address, e.g. http://127.0.0.1:2984/callback?code=...");
+                    }
+
+                    return false;
+                }
+
                 code = ExtractCodeFromCallbackUrl(code);
             }
 
