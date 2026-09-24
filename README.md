@@ -2,8 +2,7 @@
 
 ![Logo](./.repo_resources/logo.png)
 
-A Dalamud plugin to control Spotify from within FFXIV, with a hardened Spotify OAuth login that survives environments where the browser can't connect back to the game (Wine/Linux, firewalls).
-
+A Dalamud plugin to listen to music from within FFXI.
 Fork of [Critical-Impact/FantasyPlayer](https://github.com/Critical-Impact/FantasyPlayer) with:
 - Manual login fallback: paste the callback URL/code directly, or click **Paste & Complete Login** to read it from your clipboard.
 - Bigger paste box (full callback URLs fit).
