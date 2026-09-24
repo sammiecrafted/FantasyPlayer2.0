@@ -53,8 +53,9 @@ namespace FantasyPlayer.Provider.Local
                 timeoutCts.CancelAfter(TimeSpan.FromSeconds(3));
                 await _tcp.ConnectAsync(_host, _port).WaitAsync(timeoutCts.Token);
                 var stream = _tcp.GetStream();
-                _reader = new StreamReader(stream, Encoding.UTF8);
-                _writer = new StreamWriter(stream, Encoding.UTF8) { NewLine = "\n", AutoFlush = true };
+                var utf8NoBom = new UTF8Encoding(false);
+                _reader = new StreamReader(stream, utf8NoBom);
+                _writer = new StreamWriter(stream, utf8NoBom) { NewLine = "\n", AutoFlush = true };
 
                 var greeting = await _reader.ReadLineAsync().WaitAsync(timeoutCts.Token);
                 if (greeting == null || !greeting.StartsWith("OK", StringComparison.Ordinal))
