@@ -1,0 +1,11 @@
+author: sammiecrafted
+name: Fantasy Player Improved
+description: |-
+  Control Spotify playback from within FFX|V
+  Improved fork with OAuth login fixes (manual-code fallback).
+  Originally by Critical-Impact / BiscuitUmU.
+repo_url: https://github.com/sammiecrafted/FantasyPlayer2.0
+punchline: Like you'd ever be sick of the in game music right?
+IconUrl: https://raw.githubusercontent.com/sammiecrafted/FantasyPlayer2.0/main/.repo_resources/logo.png
+ImageUrls:
+  - https://raw.githubusercontent.com/sammiecrafted/FantasyPlayer2.0/main/.repo_resources/player_preview.png
