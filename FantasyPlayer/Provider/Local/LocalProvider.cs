@@ -19,7 +19,7 @@ namespace FantasyPlayer.Provider.Local
     /// </summary>
     public class LocalProvider : IPlayerProvider
     {
-        private readonly LocalSettings localSettings;
+        private readonly Configuration configuration;
         private readonly ChatMessageService chatMessageService;
         private readonly IChatGui chatGui;
 
@@ -32,9 +32,9 @@ namespace FantasyPlayer.Provider.Local
         private string? _lastError;
         private string _lastId = string.Empty;
 
-        public LocalProvider(LocalSettings localSettings, ChatMessageService chatMessageService, IChatGui chatGui)
+        public LocalProvider(Configuration configuration, ChatMessageService chatMessageService, IChatGui chatGui)
         {
-            this.localSettings = localSettings;
+            this.configuration = configuration;
             this.chatMessageService = chatMessageService;
             this.chatGui = chatGui;
         }
@@ -65,7 +65,7 @@ namespace FantasyPlayer.Provider.Local
                 RequiresLogin = false
             };
 
-            _client = new MpdClient(localSettings.Host, localSettings.Port, localSettings.Password);
+            _client = new MpdClient(configuration.LocalSettings.Host, configuration.LocalSettings.Port, configuration.LocalSettings.Password);
             await Connect();
             if (_client.IsConnected)
             {
@@ -318,7 +318,7 @@ namespace FantasyPlayer.Provider.Local
             await Connect();
             if (!_client.IsConnected)
             {
-                _lastError = $"Could not connect to MPD at {localSettings.Host}:{localSettings.Port}. Ensure mpd is running.{(_client.LastError != null ? " " + _client.LastError : string.Empty)}";
+                _lastError = $"Could not connect to MPD at {configuration.LocalSettings.Host}:{configuration.LocalSettings.Port}. Ensure mpd is running.{(_client.LastError != null ? " " + _client.LastError : string.Empty)}";
                 chatGui.PrintError($"Local: {_lastError}");
             }
 
