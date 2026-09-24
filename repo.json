@@ -2,9 +2,9 @@
   {
     "Name": "Fantasy Player Improved",
     "InternalName": "FantasyPlayerImproved",
-    "AssemblyVersion": "2.6.1.10",
+    "AssemblyVersion": "3.0.0.0",
     "TestingAssemblyVersion": null,
-    "Description": "Control Spotify playback from within FFXIV, with OAuth login fixes (manual-code fallback). Originally by Critical-Impact / BiscuitUmU.",
+    "Description": "Control Spotify, Apple Music, or local files from within FFXIV. Features queue management, playlists, synced lyrics, MPD support, and Wine/Linux login fallback. Originally by Critical-Impact / BiscuitUmU.",
     "ApplicableVersion": "any",
     "DalamudApiLevel": 15,
     "IconUrl": "https://raw.githubusercontent.com/sammiecrafted/FantasyPlayer2.0/main/.repo_resources/logo.png",
