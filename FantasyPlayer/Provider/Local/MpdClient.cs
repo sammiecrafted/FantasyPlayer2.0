@@ -24,6 +24,7 @@ namespace FantasyPlayer.Provider.Local
         private StreamReader? _reader;
         private StreamWriter? _writer;
         private bool _connected;
+        private bool _disposed;
         private string? _lastError;
 
         public MpdClient(string host, int port, string? password)
@@ -39,6 +40,11 @@ namespace FantasyPlayer.Provider.Local
 
         public async Task<bool> ConnectAsync(CancellationToken cancellationToken = default)
         {
+            if (_disposed)
+            {
+                return false;
+            }
+
             try
             {
                 Close();
@@ -93,6 +99,11 @@ namespace FantasyPlayer.Provider.Local
         /// </summary>
         public async Task<List<string>> SendAsync(string command, CancellationToken cancellationToken = default)
         {
+            if (_disposed)
+            {
+                return new List<string>();
+            }
+
             await _gate.WaitAsync(cancellationToken);
             try
             {
@@ -230,6 +241,12 @@ namespace FantasyPlayer.Provider.Local
 
         public void Dispose()
         {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
             Close();
             _gate.Dispose();
         }

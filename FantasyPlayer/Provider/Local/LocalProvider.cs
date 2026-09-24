@@ -29,6 +29,7 @@ namespace FantasyPlayer.Provider.Local
         private DateTime _lastPoll = DateTime.MinValue;
         private DateTime _lastConnectAttempt = DateTime.MinValue;
         private bool _polling;
+        private bool _disposed;
         private string? _lastError;
         private string _lastId = string.Empty;
 
@@ -105,7 +106,7 @@ namespace FantasyPlayer.Provider.Local
 
         public void Update()
         {
-            if (!initialized || _client == null)
+            if (!initialized || _client == null || _disposed)
             {
                 return;
             }
@@ -128,14 +129,21 @@ namespace FantasyPlayer.Provider.Local
         {
             try
             {
-                if (!_client!.IsConnected)
+                try
                 {
-                    await Connect();
-                }
+                    if (!_client!.IsConnected)
+                    {
+                        await Connect();
+                    }
 
-                if (_client.IsConnected)
+                    if (_client.IsConnected)
+                    {
+                        await RefreshState();
+                    }
+                }
+                catch (System.ObjectDisposedException)
                 {
-                    await RefreshState();
+                    // Provider is being unloaded; a poll was already in flight. Safe to ignore.
                 }
             }
             finally
@@ -318,7 +326,7 @@ namespace FantasyPlayer.Provider.Local
             await Connect();
             if (!_client.IsConnected)
             {
-                _lastError = $"Could not connect to MPD at {configuration.LocalSettings.Host}:{configuration.LocalSettings.Port}. Ensure mpd is running.{(_client.LastError != null ? " " + _client.LastError : string.Empty)}";
+                _lastError = $"Could not connect to MPD at {configuration.LocalSettings.Host}:{configuration.LocalSettings.Port}. Ensure mpd is installed and running (see SETUP.md).{(_client.LastError != null ? " " + _client.LastError : string.Empty)}";
                 chatGui.PrintError($"Local: {_lastError}");
             }
 
@@ -400,6 +408,7 @@ namespace FantasyPlayer.Provider.Local
 
         public void Dispose()
         {
+            _disposed = true;
             _client?.Dispose();
         }
 
