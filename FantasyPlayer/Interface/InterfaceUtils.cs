@@ -1,4 +1,5 @@
 ﻿using Dalamud.Bindings.ImGui;
+using System;
 using System.Numerics;
 
 namespace FantasyPlayer.Interface
@@ -12,16 +13,18 @@ namespace FantasyPlayer.Interface
         
         public static void TextCentered(string text)
         {
-            var fontSize = ImGui.CalcTextSize(text).X;
-            ImGui.SameLine((ImGui.GetWindowSize().X - fontSize) / 2);
+            var textWidth = ImGui.CalcTextSize(text).X;
+            var avail = ImGui.GetContentRegionAvail().X;
+            ImGui.SetCursorPosX(MathF.Max(0f, (avail - textWidth) / 2));
             ImGui.Text(text);
             ImGui.Spacing();
         }
         
         public static bool ButtonCentered(string text)
         {
-            var fontSize = ImGui.CalcTextSize(text).X;
-            ImGui.SameLine((ImGui.GetWindowSize().X - fontSize) / 2);
+            var textWidth = ImGui.CalcTextSize(text).X + ImGui.GetStyle().FramePadding.X * 2;
+            var avail = ImGui.GetContentRegionAvail().X;
+            ImGui.SetCursorPosX(MathF.Max(0f, (avail - textWidth) / 2));
             return ImGui.Button(text);
         }
     }

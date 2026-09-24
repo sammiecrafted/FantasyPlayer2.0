@@ -224,9 +224,6 @@ namespace FantasyPlayer.Interface.Window
                 InterfaceUtils.TextCentered("Waiting for a response to login... Please check your browser.");
                 if (InterfaceUtils.ButtonCentered("Re-open Url"))
                     playerProvider.RetryAuth();
-                ImGui.Separator();
-                InterfaceUtils.TextCentered("If the browser tab can't connect back to the game after authorizing,");
-                InterfaceUtils.TextCentered("copy the \"code=...\" from the address bar and paste it below instead.");
 
                 var authUri = playerProvider.AuthUri;
                 if (!string.IsNullOrEmpty(authUri))
@@ -235,18 +232,19 @@ namespace FantasyPlayer.Interface.Window
                     {
                         ImGui.SetClipboardText(authUri);
                     }
-                    ImGui.Spacing();
                 }
 
-                ImGui.Spacing();
-                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-                ImGui.InputTextWithHint("##pfp-login-code", "Paste login code or callback URL", ref _manualCode, 512);
-                ImGui.Spacing();
                 ImGui.Spacing();
                 if (InterfaceUtils.ButtonCentered("Complete Login") && !string.IsNullOrWhiteSpace(_manualCode))
                 {
                     playerProvider.CompleteAuth(_manualCode);
                 }
+
+                ImGui.Separator();
+                InterfaceUtils.TextCentered("If the browser tab can't connect back to the game after you agree,");
+                InterfaceUtils.TextCentered("copy the \"code=...\" from the address bar and paste it below:");
+                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+                ImGui.InputTextWithHint("##pfp-login-code", "Paste login code or callback URL", ref _manualCode, 512);
             }
 
             if (!string.IsNullOrEmpty(playerProvider.LastAuthError))
