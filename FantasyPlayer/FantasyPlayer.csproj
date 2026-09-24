@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Dalamud.NET.Sdk/15.0.0">
     <PropertyGroup>
         <ProjectGuid>{7C8F3B5E-12F3-43F5-9080-B58471ABB7A1}</ProjectGuid>
-        <Version>2.6.0.3</Version>
+        <Version>2.6.0.4</Version>
         <AssemblyName>FantasyPlayerImproved</AssemblyName>
         <AssemblyTitle>FantasyPlayerImproved</AssemblyTitle>
         <Product>FantasyPlayerImproved</Product>

@@ -235,9 +235,14 @@ namespace FantasyPlayer.Interface.Window
                     {
                         ImGui.SetClipboardText(authUri);
                     }
+                    ImGui.Spacing();
                 }
 
-                ImGui.InputTextWithHint("##pfp-login-code", "Paste login code or callback URL", ref _manualCode, 4096);
+                ImGui.Spacing();
+                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+                ImGui.InputTextWithHint("##pfp-login-code", "Paste login code or callback URL", ref _manualCode, 512);
+                ImGui.Spacing();
+                ImGui.Spacing();
                 if (InterfaceUtils.ButtonCentered("Complete Login") && !string.IsNullOrWhiteSpace(_manualCode))
                 {
                     playerProvider.CompleteAuth(_manualCode);
