@@ -24,13 +24,15 @@ namespace FantasyPlayer.Interface.Window
         private readonly ConfigurationManager _configurationManager;
         private readonly CommandManagerFp commandManagerFp;
         private readonly IUiBuilder _uiBuilder;
+        private readonly SpotifyLoginWindow spotifyLoginWindow;
 
-        public SettingsWindow(ILogger<SettingsWindow> logger, MediatorService mediatorService, Configuration configuration, ConfigurationManager configurationManager, CommandManagerFp commandManagerFp, IUiBuilder uiBuilder) : base(logger, mediatorService, "Fantasy Player - Configuration", ImGuiWindowFlags.NoScrollbar)
+        public SettingsWindow(ILogger<SettingsWindow> logger, MediatorService mediatorService, Configuration configuration, ConfigurationManager configurationManager, CommandManagerFp commandManagerFp, IUiBuilder uiBuilder, SpotifyLoginWindow spotifyLoginWindow) : base(logger, mediatorService, "Fantasy Player - Configuration", ImGuiWindowFlags.NoScrollbar)
         {
             _configuration = configuration;
             _configurationManager = configurationManager;
             this.commandManagerFp = commandManagerFp;
             _uiBuilder = uiBuilder;
+            this.spotifyLoginWindow = spotifyLoginWindow;
             MediatorService.Subscribe<ConfigurationUpdatedMessage>(this, ConfigurationUpdated );
             this.Size = new Vector2(800, 800);
             this.SizeCondition = ImGuiCond.FirstUseEver;
@@ -144,6 +146,15 @@ namespace FantasyPlayer.Interface.Window
                 {
                     setupUrl.OpenBrowser();
                 }
+
+                ImGui.Separator();
+
+                if (ImGui.Button("Connect Spotify Account"))
+                {
+                    spotifyLoginWindow.Open();
+                }
+                ImGui.SameLine();
+                ImGui.TextDisabled("Opens the Spotify login window");
             }
 
             if (ImGui.CollapsingHeader("Local Music (MPD) Settings"))
@@ -176,6 +187,20 @@ namespace FantasyPlayer.Interface.Window
                 }
 
                 ImGui.TextWrapped("The music folder must be a path mpd can read (keep it inside mpd's music_directory).");
+
+                var httpStreamUrl = _configuration.LocalSettings.HttpStreamUrl;
+                if (ImGui.InputText("HTTP stream URL (browser link)", ref httpStreamUrl, 512))
+                {
+                    _configuration.LocalSettings.HttpStreamUrl = httpStreamUrl;
+                }
+
+                ImGui.SameLine();
+                if (ImGui.Button("Copy Link"))
+                {
+                    ImGui.SetClipboardText(_configuration.LocalSettings.HttpStreamUrl);
+                }
+
+                ImGui.TextWrapped("To listen in your browser too, add an 'httpd' output to mpd.conf (see SETUP.md) and use its URL here. 'Copy Link' copies it to your clipboard - just paste it into your browser.");
 
                 ImGui.Separator();
 

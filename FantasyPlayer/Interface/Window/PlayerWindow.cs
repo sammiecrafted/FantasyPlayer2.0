@@ -36,6 +36,7 @@ namespace FantasyPlayer.Interface.Window
         private readonly Configuration configuration;
         private readonly ICondition condition;
         private readonly IPlayerState _playerState;
+        private readonly SpotifyLoginWindow spotifyLoginWindow;
 
         private DateTime? _lastUpdated;
         private DateTime? _lastPaused;
@@ -43,7 +44,6 @@ namespace FantasyPlayer.Interface.Window
         private int _progressMs;
         private string _lastId;
         private bool _lastBoundByDuty;
-        private string _manualCode = "";
         private int _localStationIndex;
         private string _radioQuery = "";
         private List<Config.RadioStation> _radioResults = new List<Config.RadioStation>();
@@ -59,7 +59,7 @@ namespace FantasyPlayer.Interface.Window
             39 * ImGui.GetIO().FontGlobalScale);
 
 
-        public PlayerWindow(ILogger<PlayerWindow> logger, IUiBuilder uiBuilder, IFont font, MediatorService mediatorService, PlayerManager playerManager, Configuration configuration, ICondition condition, IPlayerState playerState) : base(logger, mediatorService, "Fantasy Player - Player")
+        public PlayerWindow(ILogger<PlayerWindow> logger, IUiBuilder uiBuilder, IFont font, MediatorService mediatorService, PlayerManager playerManager, Configuration configuration, ICondition condition, IPlayerState playerState, SpotifyLoginWindow spotifyLoginWindow) : base(logger, mediatorService, "Fantasy Player - Player")
         {
             this.uiBuilder = uiBuilder;
             this.font = font;
@@ -67,6 +67,7 @@ namespace FantasyPlayer.Interface.Window
             this.configuration = configuration;
             this.condition = condition;
             _playerState = playerState;
+            this.spotifyLoginWindow = spotifyLoginWindow;
             SetDefaultWindowSize();
             MediatorService.Subscribe<ConfigurationUpdatedMessage>(this, ConfigurationUpdated );
             this.uiBuilder.OpenMainUi += UiBuilderOnOpenMainUi;
@@ -140,7 +141,7 @@ namespace FantasyPlayer.Interface.Window
                      configuration.PlayerSettings.PlayerWindowShown &&
                      !_playerManager.CurrentPlayerProvider.PlayerState.IsLoggedIn)
             {
-                DrawLogin();
+                DrawLoginPrompt();
             }
             else if (_playerManager.CurrentPlayerProvider != null &&
                      _playerManager.CurrentPlayerProvider is LocalProvider localProvider &&
@@ -214,7 +215,7 @@ namespace FantasyPlayer.Interface.Window
             }
         }
 
-        public void DrawLogin()
+        public void DrawLoginPrompt()
         {
             var playerProvider = _playerManager.CurrentPlayerProvider;
             if (playerProvider == null || !playerProvider.Initialized)
@@ -222,68 +223,26 @@ namespace FantasyPlayer.Interface.Window
                 return;
             }
 
-            if (!playerProvider.PlayerState.IsAuthenticating)
-            {
-                InterfaceUtils.TextCentered($"Please login to {playerProvider.PlayerState.ServiceName} to start.");
-                if (InterfaceUtils.ButtonCentered("Login"))
-                    playerProvider.StartAuth();
-            }
-            else
-            {
-                InterfaceUtils.TextCentered("Waiting for a response to login... Copy the URL below, open it,");
-                InterfaceUtils.TextCentered("and authorize with the account you want to use.");
-                if (InterfaceUtils.ButtonCentered("Re-open Url"))
-                    playerProvider.RetryAuth();
-
-                var authUri = playerProvider.AuthUri;
-                if (!string.IsNullOrEmpty(authUri))
-                {
-                    if (InterfaceUtils.ButtonCentered("Copy Authorize URL"))
-                    {
-                        ImGui.SetClipboardText(authUri);
-                    }
-                }
-
-                ImGui.Spacing();
-                if (InterfaceUtils.ButtonCentered("Complete Login") && !string.IsNullOrWhiteSpace(_manualCode))
-                {
-                    playerProvider.CompleteAuth(_manualCode);
-                }
-                if (InterfaceUtils.ButtonCentered("Paste & Complete Login"))
-                {
-                    _manualCode = ImGui.GetClipboardText() ?? string.Empty;
-                    playerProvider.CompleteAuth(_manualCode);
-                }
-
-                ImGui.Separator();
-                InterfaceUtils.TextCentered("After you click Agree, your browser can't connect back to the game's local");
-                InterfaceUtils.TextCentered("server (normal on Wine/Linux), but the address bar still has the login code. Copy the");
-                InterfaceUtils.TextCentered("full 127.0.0.1:2984/callback?code=... URL and click \"Paste & Complete Login\".");
-                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-                ImGui.InputTextWithHint("##pfp-login-code", "Paste login code or callback URL", ref _manualCode, 8192);
-            }
-
             if (!string.IsNullOrEmpty(playerProvider.LastAuthError))
             {
                 ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudRed);
-                InterfaceUtils.TextCentered(pageAwareText(playerProvider.LastAuthError));
+                InterfaceUtils.TextCentered(pageAwareText(playerProvider.LastAuthError!));
                 ImGui.PopStyleColor();
                 if (InterfaceUtils.ButtonCentered("Retry Connection"))
                 {
                     playerProvider.ClearAuthError();
                     playerProvider.RetryConnect();
                 }
-                if (InterfaceUtils.ButtonCentered("Dismiss"))
-                {
-                    playerProvider.ClearAuthError();
-                }
             }
 
-            ImGui.Spacing();
-            ImGui.Separator();
+            InterfaceUtils.TextCentered($"Spotify is not connected.");
+            if (InterfaceUtils.ButtonCentered("Connect Spotify Account"))
+            {
+                spotifyLoginWindow.Open();
+            }
+
             if (InterfaceUtils.ButtonCentered("Reset Login"))
             {
-                _manualCode = string.Empty;
                 playerProvider.ResetLogin();
             }
         }
@@ -362,6 +321,20 @@ namespace FantasyPlayer.Interface.Window
                 if (ImGui.Button("Play Folder"))
                 {
                     localProvider.PlayFolder(configuration.LocalSettings.MusicFolder);
+                }
+            }
+
+            if (!string.IsNullOrEmpty(configuration.LocalSettings.HttpStreamUrl))
+            {
+                ImGui.SameLine();
+                if (ImGui.Button("Copy Stream Link"))
+                {
+                    ImGui.SetClipboardText(configuration.LocalSettings.HttpStreamUrl);
+                }
+
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.SetTooltip("Copies the HTTP stream URL of your mpd server. Paste it into your browser to listen there too.");
                 }
             }
 

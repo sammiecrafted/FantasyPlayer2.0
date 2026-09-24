@@ -46,6 +46,13 @@ namespace FantasyPlayer.Config
             set => SetField(ref musicFolder, value);
         }
 
+        private string httpStreamUrl = "http://127.0.0.1:8000/";
+        public string HttpStreamUrl
+        {
+            get => httpStreamUrl;
+            set => SetField(ref httpStreamUrl, value);
+        }
+
         public List<RadioStation> Stations { get; set; } = new List<RadioStation>();
 
         public void AddStation(RadioStation station)

@@ -95,6 +95,18 @@ audio_output {
     type  "pulse"
     name  "Pulse Output"
 }
+
+# Optional: let you ALSO listen in a browser. After restarting mpd, the
+# "Copy Stream Link" button in the plugin copies http://127.0.0.1:8000/ to
+# your clipboard; paste it into any browser to hear whatever mpd is playing.
+audio_output {
+    type  "httpd"
+    name  "My HTTP Stream"
+    encoder  "vorbis"
+    port     "8000"
+    bind_to_address  "127.0.0.1"
+}
+
 # Windows example:
 # music_directory "C:/Users/you/Music"
 # audio_output { type "wasapi" name "WASAPI" }

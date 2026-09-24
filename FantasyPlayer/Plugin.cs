@@ -45,19 +45,18 @@ namespace FantasyPlayer
                 var configuration = configurationManager.Config;
                 return configuration;
             }).As<Configuration>().SingleInstance();
-            containerBuilder.RegisterType<SpotifyProvider>().SingleInstance();
-            containerBuilder.RegisterType<LocalProvider>().SingleInstance();
+            containerBuilder.RegisterType<SpotifyProvider>().As<SpotifyProvider>().As<IPlayerProvider>().SingleInstance();
+            containerBuilder.RegisterType<LocalProvider>().As<LocalProvider>().As<IPlayerProvider>().SingleInstance();
             containerBuilder.RegisterType<CommandManagerFp>().SingleInstance();
             containerBuilder.RegisterType<PlayerManager>().SingleInstance();
             containerBuilder.RegisterType<ChatMessageService>().SingleInstance();
             containerBuilder.RegisterType<InterfaceController>().SingleInstance();
             containerBuilder.RegisterType<SettingsWindow>().As<Window>().SingleInstance();
             containerBuilder.RegisterType<PlayerWindow>().As<Window>().SingleInstance();
+            containerBuilder.RegisterType<SpotifyLoginWindow>().As<Window>().SingleInstance();
             containerBuilder.RegisterType<DebugWindow>().As<Window>().SingleInstance();
             containerBuilder.RegisterType<CommandsService>().SingleInstance();
             containerBuilder.RegisterType<Font>().As<IFont>().SingleInstance();
-            containerBuilder.RegisterType<SpotifyProvider>().As<IPlayerProvider>().SingleInstance();
-            containerBuilder.RegisterType<LocalProvider>().As<IPlayerProvider>().SingleInstance();
             containerBuilder.RegisterType<IpcService>().SingleInstance();
         }
 

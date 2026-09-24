@@ -47,8 +47,10 @@ namespace FantasyPlayer.Manager
 
         public void SetupDefaultProvider()
         {
-            var defaultProvider =
-                PlayerProviders.FirstOrDefault(c => c.Key == this.configuration.PlayerSettings.DefaultProvider);
+            var defaultKey = string.IsNullOrEmpty(this.configuration.PlayerSettings.DefaultProvider)
+                ? "local"
+                : this.configuration.PlayerSettings.DefaultProvider;
+            var defaultProvider = PlayerProviders.FirstOrDefault(c => c.Key == defaultKey);
             if (defaultProvider != null)
             {
                 CurrentPlayerProvider = defaultProvider;
