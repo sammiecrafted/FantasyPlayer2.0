@@ -146,8 +146,12 @@ namespace FantasyPlayer.Spotify
                     var detail = lastError is APIException apiEx
                         ? $"{apiEx.Response.StatusCode}: {Truncate(apiEx.Response.Body?.ToString(), 200)}"
                         : lastError?.Message;
+                    var guidance = detail != null && detail.Contains("premium subscription required",
+                        StringComparison.OrdinalIgnoreCase)
+                        ? "The Spotify app for this Client ID must be owned by an account with ACTIVE Premium. Create your own app at https://developer.spotify.com/dashboard (Redirect URI: http://127.0.0.1:2984/callback) and use ITS Client ID in settings. After the owner's subscription changes it can take a few hours to take effect."
+                        : "Your token is still valid - click \"Retry Connection\" below, or re-login if it persists.";
                     OnAuthError?.Invoke(
-                        $"Unable to connect to Spotify after 3 attempts ({lastError?.GetType().Name}: {detail}). Your token is still valid - click \"Retry Connection\" below, or re-login if it persists.");
+                        $"Unable to connect to Spotify after 3 attempts ({lastError?.GetType().Name}: {detail}). {guidance}");
                     return;
                 }
 
